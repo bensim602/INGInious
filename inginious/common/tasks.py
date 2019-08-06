@@ -14,14 +14,14 @@ from inginious.frontend.environment_types import get_env_type
 class Task(object):
     """ Contains the data for a task """
 
-    def __init__(self, course, taskid, content, task_fs, translations_fs, hook_manager: HookManager, task_problem_types):
+    def __init__(self, courseid, taskid, content, task_fs, translations_fs, hook_manager, task_problem_types):
         """
             Init the task. course is a Course object, taskid the task id, and content is a dictionnary containing the data needed to initialize the Task object.
             If init_data is None, the data will be taken from the course tasks' directory.
         """
-        content = self._migrate_from_v1(content)
 
-        self._course = course
+        content = self._migrate_from_v1(content)
+        self._courseid = courseid
         self._taskid = taskid
         self._fs = task_fs
         self._hook_manager = hook_manager
@@ -92,13 +92,9 @@ class Task(object):
         """ Get problems contained in this task """
         return self._problems
 
-    def get_course_id(self):
+    def get_courseid(self):
         """ Return the courseid of the course that contains this task """
-        return self._course.get_id()
-
-    def get_course(self):
-        """ Return the course that contains this task """
-        return self._course
+        return self._courseid
 
     def get_environment_parameters(self):
         """ Returns the environment parameters, as returned by the loader """
