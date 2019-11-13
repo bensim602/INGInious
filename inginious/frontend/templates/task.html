@@ -370,6 +370,8 @@ $else:
     $# no need to check with lti=True/False here as it was already checked by the calling python script.
     $ groups_ok = user_manager.task_can_user_submit(task, user_manager.session_username(), 'groups')
     $ tokens_ok = user_manager.task_can_user_submit(task, user_manager.session_username(), 'tokens')
+    <button type="button" class="btn btn-info btn-lg btn-block center-block">$:_("Load from local storage")</button>
+    <button type="button" class="btn btn-info btn-lg btn-block center-block">$:_("Save to local storage")</button>
     $if not registered:
         <button type="submit" class="btn btn-default btn-lg btn-block center-block" disabled="disabled">$:_("Please enroll in the course to submit.")</button>
     $elif groups_ok and tokens_ok:
@@ -429,6 +431,35 @@ $$(document).ready(function() {
     init_task_page("$task.get_evaluate()");
 });
 
+</script>
+
+<script type="text/javascript">
+    $$(document).ready(function() {
+        $$.each(codeEditors, function(name, editor)
+            {
+               editor.setValue(localStorage["$course.get_id()"+"/"+name]);
+            });
+    });
+    $$(document).on('keydown', function(e){
+        if(e.ctrlKey && e.which === 83){ // Check for the Ctrl key being pressed, and if the key = [S] (83)
+            alert("Ctrl+S!");
+            if (typeof(Storage) !== "undefined") {
+                $$.each(codeEditors, function(name, editor)
+                {
+
+                    let saved_name = "$course.get_id()"+"/"+name;
+                    localStorage.setItem(saved_name, editor.getTextArea().value);
+                });
+              // Code for localStorage/sessionStorage.
+
+            } else {
+              // Sorry! No Web Storage support..
+                alert("Your browser doesn't support web storage");
+            }
+            e.preventDefault();
+            return false;
+        }
+    });
 </script>
 
 $# Input random
