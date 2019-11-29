@@ -446,6 +446,10 @@ $$(document).ready(function() {
             {
                editor.setValue(localStorage["$course.get_id()"+"/"+name]);
             });
+        $$("input:text").each(function(){
+            let name = "$course.get_id()"+"/"+($$(this).attr("name"));
+            $$(this).val(localStorage[name]);
+        });
     });
     $$("#save_loc").on('click', function(e){
         alert("Saved to browser");
@@ -455,6 +459,11 @@ $$(document).ready(function() {
 
                 let saved_name = "$course.get_id()"+"/"+name;
                 localStorage.setItem(saved_name, editor.getTextArea().value);
+            });
+            $$("input:text").each(function(){
+                let name = "$course.get_id()"+"/"+($$(this).attr("name"));
+                localStorage.setItem(name,$$(this).val());
+
             });
           // Code for localStorage/sessionStorage.
 
