@@ -441,7 +441,6 @@ $$(document).ready(function() {
 
 <script type="text/javascript">
     $$("#load_loc").on('click', function(e){
-        alert("Loaded from browser");
         $$.each(codeEditors, function(name, editor)
             {
                editor.setValue(localStorage["$course.get_id()"+"/"+name]);
@@ -450,9 +449,20 @@ $$(document).ready(function() {
             let name = "$course.get_id()"+"/"+($$(this).attr("name"));
             $$(this).val(localStorage[name]);
         });
+        $$("input:radio").each(function(){
+            let name = "$course.get_id()"+"/"+($$(this).attr("id"));
+            if(localStorage[name]==="true"){
+                this.checked=true;
+            }
+        });
+        $$("input:checkbox").each(function(){
+            let name = "$course.get_id()"+"/"+($$(this).attr("id"));
+            if(localStorage[name]==="true"){
+                this.checked=true;
+            }
+        });
     });
     $$("#save_loc").on('click', function(e){
-        alert("Saved to browser");
         if (typeof(Storage) !== "undefined") {
             $$.each(codeEditors, function(name, editor)
             {
@@ -463,6 +473,22 @@ $$(document).ready(function() {
             $$("input:text").each(function(){
                 let name = "$course.get_id()"+"/"+($$(this).attr("name"));
                 localStorage.setItem(name,$$(this).val());
+
+            });
+            $$("input:radio").each(function(){
+                if(this.checked){
+                    let name = "$course.get_id()"+"/"+($$(this).attr("id"));
+                    localStorage.setItem(name, "true");
+
+                }
+
+            });
+            $$("input:checkbox").each(function(){
+                if(this.checked){
+                    let name = "$course.get_id()"+"/"+($$(this).attr("id"));
+                    localStorage.setItem(name, "true");
+
+                }
 
             });
           // Code for localStorage/sessionStorage.
