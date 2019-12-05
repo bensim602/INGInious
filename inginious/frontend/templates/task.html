@@ -461,6 +461,20 @@ $$(document).ready(function() {
                 this.checked=true;
             }
         });
+        try {
+              let wsp = Blockly.getMainWorkspace();
+              let name = "$course.get_id()"+"/"+wsp.id;
+              let code = localStorage[name];
+              let dom = Blockly.Xml.textToDom(code);
+              Blockly.Xml.domToWorkspace(dom);
+
+              localStorage.setItem(name, code);
+            }
+            catch(error) {
+              console.error(error);
+              // expected output: ReferenceError: nonExistentFunction is not defined
+              // Note - error messages will vary depending on browser
+            }
     });
     $$("#save_loc").on('click', function(e){
         if (typeof(Storage) !== "undefined") {
@@ -491,6 +505,19 @@ $$(document).ready(function() {
                 }
 
             });
+            try {
+              let wsp = Blockly.getMainWorkspace();
+              let dom =  Blockly.Xml.workspaceToDom(wsp);
+              let code = Blockly.Xml.domToText(dom);
+              let name = "$course.get_id()"+"/"+wsp.id;
+              localStorage.setItem(name, code);
+            }
+            catch(error) {
+              console.error(error);
+              // expected output: ReferenceError: nonExistentFunction is not defined
+              // Note - error messages will vary depending on browser
+            }
+
           // Code for localStorage/sessionStorage.
 
         } else {
