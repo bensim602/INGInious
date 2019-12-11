@@ -942,9 +942,13 @@ function load_from_storage(courseid){
 function save_to_storage(courseid){
     if (typeof(Storage) !== "undefined") {
         for(var problemid in problems_types) {
-              console.log(problemid);
-              console.log("save_webstorage_" + problems_types[problemid]+"("+courseid+","+problemid+")");
-              window["save_webstorage_" + problems_types[problemid]](courseid,problemid);
+              try{
+                  window["save_webstorage_" + problems_types[problemid]](courseid,problemid);
+              }catch(error) {
+                console.error(error);
+                // expected output: ReferenceError: nonExistentFunction is not defined
+                }
+
         }
 
     } else {
