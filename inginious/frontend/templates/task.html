@@ -441,89 +441,10 @@ $$(document).ready(function() {
 
 <script type="text/javascript">
     $$("#load_loc").on('click', function(e){
-        $$.each(codeEditors, function(name, editor)
-            {
-               editor.setValue(localStorage["$course.get_id()"+"/"+name]);
-            });
-        $$("input:text").each(function(){
-            let name = "$course.get_id()"+"/"+($$(this).attr("name"));
-            $$(this).val(localStorage[name]);
-        });
-        $$("input:radio").each(function(){
-            let name = "$course.get_id()"+"/"+($$(this).attr("id"));
-            if(localStorage[name]==="true"){
-                this.checked=true;
-            }
-        });
-        $$("input:checkbox").each(function(){
-            let name = "$course.get_id()"+"/"+($$(this).attr("id"));
-            if(localStorage[name]==="true"){
-                this.checked=true;
-            }
-        });
-        try {
-              let wsp = Blockly.getMainWorkspace();
-              let name = "$course.get_id()"+"/"+wsp.id;
-              let code = localStorage[name];
-              let dom = Blockly.Xml.textToDom(code);
-              Blockly.Xml.domToWorkspace(dom);
-
-              localStorage.setItem(name, code);
-            }
-            catch(error) {
-              console.error(error);
-              // expected output: ReferenceError: nonExistentFunction is not defined
-              // Note - error messages will vary depending on browser
-            }
+        load_from_storage("$course.get_id()");
     });
     $$("#save_loc").on('click', function(e){
-        if (typeof(Storage) !== "undefined") {
-            $$.each(codeEditors, function(name, editor)
-            {
-
-                let saved_name = "$course.get_id()"+"/"+name;
-                localStorage.setItem(saved_name, editor.getTextArea().value);
-            });
-            $$("input:text").each(function(){
-                let name = "$course.get_id()"+"/"+($$(this).attr("name"));
-                localStorage.setItem(name,$$(this).val());
-
-            });
-            $$("input:radio").each(function(){
-                if(this.checked){
-                    let name = "$course.get_id()"+"/"+($$(this).attr("id"));
-                    localStorage.setItem(name, "true");
-
-                }
-
-            });
-            $$("input:checkbox").each(function(){
-                if(this.checked){
-                    let name = "$course.get_id()"+"/"+($$(this).attr("id"));
-                    localStorage.setItem(name, "true");
-
-                }
-
-            });
-            try {
-              let wsp = Blockly.getMainWorkspace();
-              let dom =  Blockly.Xml.workspaceToDom(wsp);
-              let code = Blockly.Xml.domToText(dom);
-              let name = "$course.get_id()"+"/"+wsp.id;
-              localStorage.setItem(name, code);
-            }
-            catch(error) {
-              console.error(error);
-              // expected output: ReferenceError: nonExistentFunction is not defined
-              // Note - error messages will vary depending on browser
-            }
-
-          // Code for localStorage/sessionStorage.
-
-        } else {
-          // Sorry! No Web Storage support..
-            alert("Your browser doesn't support web storage");
-        }
+        save_to_storage("$course.get_id()");
     });
 </script>
 

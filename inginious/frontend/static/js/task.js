@@ -925,3 +925,81 @@ function updateTagsToNewSubmission(elem, data){
         badge.attr('data-original-title', tags_ok.join(", "));
     }
 }
+
+function load_from_storage(courseid){
+    if (typeof(Storage) !== "undefined") {
+        for(var problemid in problems_types) {
+              window["load_webstorage_" + problems_types[problemid]](courseid,problemid);
+        }
+    } else {
+      // Sorry! No Web Storage support..
+        console.log("Your browser doesn't support web storage");
+    }
+
+
+}
+
+function save_to_storage(courseid){
+    if (typeof(Storage) !== "undefined") {
+        for(var problemid in problems_types) {
+              console.log(problemid);
+              console.log("save_webstorage_" + problems_types[problemid]+"("+courseid+","+problemid+")");
+              window["save_webstorage_" + problems_types[problemid]](courseid,problemid);
+        }
+
+    } else {
+      // Sorry! No Web Storage support..
+        console.log("Your browser doesn't support web storage");
+    }
+}
+function save_webstorage_code(courseid,problemid){
+        var saved_name = courseid+"/"+problemid;
+        localStorage.setItem(saved_name, codeEditors[problemid].getTextArea().value);
+}
+
+function load_webstorage_code(courseid,problemid){
+
+       codeEditors[problemid].setValue(localStorage[courseid+"/"+problemid]);
+}
+function save_webstorage_multiple_choice(courseid,problemid){
+    $(".problem input[name='" + problemid + "']").each(function(){
+        if(this.checked){
+            var name = courseid+"/"+($(this).attr("id"));
+            localStorage.setItem(name, "true");
+
+        }
+    });
+
+}
+
+function load_webstorage_multiple_choice(courseid,problemid){
+    $(".problem input[name='" + problemid + "']").each(function(){
+        var name = courseid+"/"+($(this).attr("id"));
+        if(localStorage[name]==="true"){
+            this.checked=true;
+        }
+    });
+
+}
+
+function save_webstorage_code_single_line(courseid,problemid){
+    var elem = $(".problem input[name='" + problemid + "']");
+    var name = courseid+"/"+(elem.attr("name"));
+    localStorage.setItem(name,elem.val());
+
+}
+function save_webstorage_match(courseid,problemid){
+    save_webstorage_code_single_line(courseid,problemid);
+
+}
+
+function load_webstorage_code_single_line(courseid,problemid){
+    var elem = $(".problem input[name='" + problemid + "']");
+    var name = courseid+"/"+(elem.attr("name"));
+    elem.val(localStorage[name]);
+
+}
+function load_webstorage_match(courseid,problemid){
+    load_webstorage_code_single_line(courseid,problemid);
+
+}
