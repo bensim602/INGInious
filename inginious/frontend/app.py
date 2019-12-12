@@ -9,10 +9,9 @@ import pymongo
 
 import inginious.frontend.pages.course_admin.utils as course_admin_utils
 import web
-from inginious.frontend.fix_webpy_cookies import fix_webpy_cookies
-from inginious.frontend.pages.internalerror import internalerror_generator
 
-fix_webpy_cookies() # TODO: remove me once https://github.com/webpy/webpy/pull/419 is merge in web.py
+from inginious.frontend.environment_types import register_base_env_types
+from inginious.frontend.pages.internalerror import internalerror_generator
 
 from gridfs import GridFS
 from inginious.frontend.arch_helper import create_arch, start_asyncio_and_zmq
@@ -48,6 +47,7 @@ urls = (
     r'/auth/signin/([^/]+)', 'inginious.frontend.pages.social.AuthenticationPage',
     r'/auth/callback/([^/]+)', 'inginious.frontend.pages.social.CallbackPage',
     r'/auth/share/([^/]+)', 'inginious.frontend.pages.social.SharePage',
+    r'/register/([^/]+)', 'inginious.frontend.pages.course_register.CourseRegisterPage',
     r'/course/([^/]+)', 'inginious.frontend.pages.course.CoursePage',
     r'/course/([^/]+)/([^/]+)', 'inginious.frontend.pages.tasks.TaskPage',
     r'/course/([^/]+)/([^/]+)/(.*)', 'inginious.frontend.pages.tasks.TaskPageStaticDownload',
@@ -150,7 +150,12 @@ def get_app(config):
     # Init gettext
     available_translations = {
         "fr": "Français",
-        "es": "Español"
+        "es": "Español",
+        "pt": "Português",
+        "el": "ελληνικά",
+        "vi": "Tiếng Việt",
+        "nl": "Nederlands",
+        "de": "Deutsch"
     }
 
     available_languages = {"en": "English"}
@@ -181,6 +186,9 @@ def get_app(config):
 
     # Init the different parts of the app
     plugin_manager = PluginManager()
+
+    # Add the "agent types" inside the frontend, to allow loading tasks and managing envs
+    register_base_env_types(plugin_manager)
 
     # Create the FS provider
     if "fs" in config:
@@ -265,6 +273,7 @@ def get_app(config):
     appli.template_helper = template_helper
     appli.database = database
     appli.gridfs = gridfs
+    appli.client = client
     appli.default_allowed_file_extensions = default_allowed_file_extensions
     appli.default_max_file_size = default_max_file_size
     appli.backup_dir = config.get("backup_directory", './backup')
