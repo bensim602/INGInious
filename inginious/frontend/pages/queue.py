@@ -5,6 +5,7 @@
 
 """ Job queue status page """
 
+import web
 from datetime import datetime, timedelta
 
 from inginious.frontend.pages.utils import INGIniousAuthPage
@@ -15,6 +16,15 @@ class QueuePage(INGIniousAuthPage):
 
     def GET_AUTH(self):
         """ GET request """
+        return self.showpage()
+
+    def POST_AUTH(self, *args, **kwargs):
+        inputs = web.input()
+        jobid = inputs["jobid"]
+        self.client.kill_job(jobid)
+        return self.showpage()
+
+    def showpage(self):
         if self.user_manager.user_is_superadmin():
             base_date = datetime.now()
             half_hour_date = base_date - timedelta(minutes=30)

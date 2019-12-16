@@ -29,26 +29,64 @@ $var Navbar: $:NavbarF()
     <div class="row">
         <div class="col-8">
             <h3>$:_("Submissions")</h3>
-            <ul class="nav nav-tabs">
-              <li class="nav-item active"><a class="nav-link" data-toggle="tab" href="#home">Active jobs</a></li>
-              <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#menu1">Waiting jobs</a></li>
-            </ul>
+            <form method="post">
+                <ul class="nav nav-tabs">
+                  <li class="nav-item active"><a class="nav-link" data-toggle="tab" href="#home">Active jobs</a></li>
+                  <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#menu1">Waiting jobs</a></li>
+                </ul>
 
-            <div class="tab-content">
-              <div id="home" class="tab-pane container active">
-                $if jobs_running is not None and len(jobs_running) > 0:
-                    <table class="table table-striped">
-                        <tr>
-                            <th>$:_("Type")</th>
-                            <th>$:_("Local client")</th>
-                            <th>$:_("Agent name")</th>
-                            <th>$:_("Name")</th>
-                            <th>$:_("Launcher name")</th>
-                            <th>$:_("Started at")</th>
-                            <th>$:_("Timeout at")</th>
-                            <th>$:_("Action")</th>
-                        </tr>
-                        $for (job_id, is_current_client_job, agent_name, info, launcher, started_at, max_end) in jobs_running:
+                <div class="tab-content">
+                  <div id="home" class="tab-pane container active">
+                    $if jobs_running is not None and len(jobs_running) > 0:
+                        <table class="table table-striped">
+                            <tr>
+                                <th>$:_("Type")</th>
+                                <th>$:_("Local client")</th>
+                                <th>$:_("Agent name")</th>
+                                <th>$:_("Name")</th>
+                                <th>$:_("Launcher name")</th>
+                                <th>$:_("Started at")</th>
+                                <th>$:_("Timeout at")</th>
+                                <th>$:_("Action")</th>
+                            </tr>
+                            $for (job_id, is_current_client_job, agent_name, info, launcher, started_at, max_end) in jobs_running:
+                                <tr>
+                                    <td data-toggle="tooltip" data-placement="right" title="$job_id">Task</td>
+                                    <td>
+                                        $if is_current_client_job:
+                                            $:_("Yes")
+                                        $else:
+                                            $:_("No")
+                                    </td>
+                                    <td>$agent_name</td>
+                                    <td>$info</td>
+                                    <td>$launcher</td>
+                                    <td>$from_timestamp(started_at).strftime("%d/%m/%Y %H:%M:%S")</td>
+                                    <td>$from_timestamp(max_end).strftime("%d/%m/%Y %H:%M:%S")</td>
+                                    $if user_manager.user_is_superadmin():
+                                        <td>
+                                            <button type="button" data-toggle="modal" data-job_id="$job_id" data-target="#kill_modal" class="btn btn-warning" title="Kill Job">
+                                                <i class="fa fa-remove">
+                                                </i>
+                                            </button>
+                                        </td>
+                                </tr>
+                        </table>
+                    $else:
+                        <p>$:_("There are no jobs running")</p>
+                  </div>
+                  <div id="menu1" class="tab-pane container fade">
+                    $if jobs_waiting is not None and len(jobs_waiting) > 0:
+                        <table class="table table-striped">
+                            <tr>
+                                <th>$:_("Type")</th>
+                                <th>$:_("Local")</th>
+                                <th>$:_("Name")</th>
+                                <th>$:_("Launcher name")</th>
+                                <th>$:_("Maximum runtime in seconds")</th>
+                                <th>$:_("Action")</th>
+                            </tr>
+                            $for (job_id, is_current_client_job, info, launcher, max_end) in jobs_waiting:
                             <tr>
                                 <td data-toggle="tooltip" data-placement="right" title="$job_id">Task</td>
                                 <td>
@@ -57,48 +95,24 @@ $var Navbar: $:NavbarF()
                                     $else:
                                         $:_("No")
                                 </td>
-                                <td>$agent_name</td>
                                 <td>$info</td>
                                 <td>$launcher</td>
-                                <td>$from_timestamp(started_at).strftime("%d/%m/%Y %H:%M:%S")</td>
-                                <td>$from_timestamp(max_end).strftime("%d/%m/%Y %H:%M:%S")</td>
-                                <td><a href="$get_homepath()/admin/$job_id" class="btn btn-danger"><i class="fa fa-remove"></i></a></td>
+                                <td>$max_end</td>
+                                $if user_manager.user_is_superadmin():
+                                    <td>
+                                        <button type="button" data-toggle="modal" data-job_id="$job_id" data-target="#kill_modal" class="btn btn-warning" title="Kill Job">
+                                            <i class="fa fa-remove">
+                                            </i>
+                                        </button>
+                                    </td>
                             </tr>
-                    </table>
-                $else:
-                    <p>$:_("There are no jobs running")</p>
-              </div>
-              <div id="menu1" class="tab-pane container fade">
-                $if jobs_waiting is not None and len(jobs_waiting) > 0:
-                    <table class="table table-striped">
-                        <tr>
-                            <th>$:_("Type")</th>
-                            <th>$:_("Local")</th>
-                            <th>$:_("Name")</th>
-                            <th>$:_("Launcher name")</th>
-                            <th>$:_("Maximum runtime in seconds")</th>
-                            <th>$:_("Action")</th>
-                        </tr>
-                        $for (job_id, is_current_client_job, info, launcher, max_end) in jobs_waiting:
-                        <tr>
-                            <td data-toggle="tooltip" data-placement="right" title="$job_id">Task</td>
-                            <td>
-                                $if is_current_client_job:
-                                    $:_("Yes")
-                                $else:
-                                    $:_("No")
-                            </td>
-                            <td>$info</td>
-                            <td>$launcher</td>
-                            <td>$max_end</td>
-                            <td><a href="$get_homepath()/admin/$job_id" class="btn btn-danger"><i class="fa fa-remove"></i></a></td>
-                        </tr>
-                    </table>
-                $else:
-                    <p>$:_("There are no jobs waiting in queue")</p>
-              </div>
+                        </table>
+                    $else:
+                        <p>$:_("There are no jobs waiting in queue")</p>
+                  </div>
 
-            </div>
+                </div>
+            </form>
         </div>
         <div class="col-4">
 
@@ -120,6 +134,34 @@ $var Navbar: $:NavbarF()
             </div>
         </div>
 </div>
+
+<div id="kill_modal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">$:_("Kill job") </h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p>$:_("Are you sure ?")</p>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="jobid" id="jobid">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">$:_("Cancel")</button>
+                    <button type="submit" name="reset" class="btn btn-danger">$:_("Kill")</button>
+                </div>
+            </div>
+        </div>
+</div>
+
+<script type="text/javascript">
+    $$('#kill_modal').on('show.bs.modal', function (event) {
+      $$('#jobid').val($$(event.relatedTarget).data('job_id'));
+    });
+    $$(".reset_modal").each(function(index) {
+        $$(this).tooltip({"placement": "bottom"});
+    });
+</script>
 <script>
 
 function get_label_table(){
