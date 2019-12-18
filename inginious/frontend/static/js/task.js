@@ -926,10 +926,10 @@ function updateTagsToNewSubmission(elem, data){
     }
 }
 
-function load_from_storage(courseid){
+function load_from_storage(courseid,taskid){
     if (typeof(Storage) !== "undefined") {
         for(var problemid in problems_types) {
-              window["load_webstorage_" + problems_types[problemid]](courseid,problemid);
+              window["load_webstorage_" + problems_types[problemid]](courseid,taskid,problemid);
         }
     } else {
       // Sorry! No Web Storage support..
@@ -939,11 +939,11 @@ function load_from_storage(courseid){
 
 }
 
-function save_to_storage(courseid){
+function save_to_storage(courseid,taskid){
     if (typeof(Storage) !== "undefined") {
         for(var problemid in problems_types) {
               try{
-                  window["save_webstorage_" + problems_types[problemid]](courseid,problemid);
+                  window["save_webstorage_" + problems_types[problemid]](courseid,taskid,problemid);
               }catch(error) {
                 console.error(error);
                 // expected output: ReferenceError: nonExistentFunction is not defined
@@ -956,19 +956,19 @@ function save_to_storage(courseid){
         console.log("Your browser doesn't support web storage");
     }
 }
-function save_webstorage_code(courseid,problemid){
-        var saved_name = courseid+"/"+problemid;
+function save_webstorage_code(courseid,taskid,problemid){
+        var saved_name = courseid+"/"+taskid+"/"+problemid;
         localStorage.setItem(saved_name, codeEditors[problemid].getTextArea().value);
 }
 
-function load_webstorage_code(courseid,problemid){
+function load_webstorage_code(courseid,taskid,problemid){
 
-       codeEditors[problemid].setValue(localStorage[courseid+"/"+problemid]);
+       codeEditors[problemid].setValue(localStorage[courseid+"/"+taskid+"/"+problemid]);
 }
 function save_webstorage_multiple_choice(courseid,problemid){
     $(".problem input[name='" + problemid + "']").each(function(){
         if(this.checked){
-            var name = courseid+"/"+($(this).attr("id"));
+            var name = courseid+"/"+taskid+"/"+($(this).attr("id"));
             localStorage.setItem(name, "true");
 
         }
@@ -976,9 +976,9 @@ function save_webstorage_multiple_choice(courseid,problemid){
 
 }
 
-function load_webstorage_multiple_choice(courseid,problemid){
+function load_webstorage_multiple_choice(courseid,taskid,problemid){
     $(".problem input[name='" + problemid + "']").each(function(){
-        var name = courseid+"/"+($(this).attr("id"));
+        var name = courseid+"/"+taskid+"/"+($(this).attr("id"));
         if(localStorage[name]==="true"){
             this.checked=true;
         }
@@ -986,24 +986,24 @@ function load_webstorage_multiple_choice(courseid,problemid){
 
 }
 
-function save_webstorage_code_single_line(courseid,problemid){
+function save_webstorage_code_single_line(courseid,taskid,problemid){
     var elem = $(".problem input[name='" + problemid + "']");
-    var name = courseid+"/"+(elem.attr("name"));
+    var name = courseid+"/"+taskid+"/"+(elem.attr("name"));
     localStorage.setItem(name,elem.val());
 
 }
-function save_webstorage_match(courseid,problemid){
+function save_webstorage_match(courseid,taskid,problemid){
     save_webstorage_code_single_line(courseid,problemid);
 
 }
 
-function load_webstorage_code_single_line(courseid,problemid){
+function load_webstorage_code_single_line(courseid,taskid,problemid){
     var elem = $(".problem input[name='" + problemid + "']");
-    var name = courseid+"/"+(elem.attr("name"));
+    var name = courseid+"/"+taskid+"/"+(elem.attr("name"));
     elem.val(localStorage[name]);
 
 }
-function load_webstorage_match(courseid,problemid){
+function load_webstorage_match(courseid,taskid,problemid){
     load_webstorage_code_single_line(courseid,problemid);
 
 }

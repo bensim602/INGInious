@@ -441,10 +441,10 @@ $$(document).ready(function() {
 
 <script type="text/javascript">
     $$("#load_loc").on('click', function(e){
-        load_from_storage("$course.get_id()");
+        load_from_storage("$course.get_id()","$task.get_id()");
     });
     $$("#save_loc").on('click', function(e){
-        save_to_storage("$course.get_id()");
+        save_to_storage("$course.get_id()","$task.get_id()");
     });
 </script>
 
