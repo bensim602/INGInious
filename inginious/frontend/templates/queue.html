@@ -1,4 +1,4 @@
-$def with (jobs_running, jobs_waiting, from_timestamp,subs,subs_ten,subs_min,per_hour)
+$def with (jobs_running, jobs_waiting, from_timestamp,subs,subs_ten,subs_min,per_hour,available_agent_names,all_agent_names)
 
 $#
 $# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
@@ -131,6 +131,9 @@ $var Navbar: $:NavbarF()
                 <p> Last minute : $subs_min</p>
                 <p> Last 10 minutes : $subs_ten</p>
                 <p> Last 30 minutes : $subs</p>
+                <h3>$:_("Agents information")</h3>
+                <p>Available : $available_agent_names</p>
+                <p>All : $all_agent_names</p>
             </div>
         </div>
 </div>

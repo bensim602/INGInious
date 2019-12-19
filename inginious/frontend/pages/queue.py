@@ -25,7 +25,12 @@ class QueuePage(INGIniousAuthPage):
         return self.showpage()
 
     def showpage(self):
+
         if self.user_manager.user_is_superadmin():
+            registered_agents, available_agents = self.submission_manager.get_agents_informations()
+            address_agents = list(registered_agents.keys())
+            intersection = [value for value in address_agents if value in list(available_agents)]
+            available_agents_names = [registered_agents[value] for value in intersection]
             base_date = datetime.now()
             half_hour_date = base_date - timedelta(minutes=30)
             ten_min_date = base_date - timedelta(minutes=10)
@@ -56,6 +61,6 @@ class QueuePage(INGIniousAuthPage):
             return self.template_helper.get_renderer().queue(*self.submission_manager.get_job_queue_snapshot(),
                                                              datetime.fromtimestamp, len(subs), len(subs_ten),
                                                              len(subs_min),
-                                                             perhour_sub)
+                                                             perhour_sub,available_agents_names,list(registered_agents.values()))
         return self.template_helper.get_renderer().queue(*self.submission_manager.get_job_queue_snapshot(),
-                                                         datetime.fromtimestamp, 0, 0, 0, {})
+                                                         datetime.fromtimestamp, 0, 0, 0, {},[],[])

@@ -43,7 +43,8 @@ class WebAppSubmissionManager:
         self._logger = logging.getLogger("inginious.webapp.submissions")
         self._lti_outcome_manager = lti_outcome_manager
 
-    def _job_done_callback(self, submissionid, task, result, grade, problems, tests, custom, state, archive, stdout, stderr, newsub=True):
+    def _job_done_callback(self, submissionid, task, result, grade, problems, tests, custom, state, archive, stdout,
+                           stderr, newsub=True):
         """ Callback called by Client when a job is done. Updates the submission in the database with the data returned after the completion of the
         job """
         submission = self.get_submission(submissionid, False)
@@ -51,7 +52,7 @@ class WebAppSubmissionManager:
 
         data = {
             "status": ("done" if result[0] == "success" or result[0] == "failed" else "error"),
-             # error only if error was made by INGInious
+            # error only if error was made by INGInious
             "result": result[0],
             "grade": grade,
             "text": result[1],
@@ -118,7 +119,8 @@ class WebAppSubmissionManager:
 
             # safety check
             if outcome_result_id is None or outcome_service_url is None:
-                self._logger.error("outcome_result_id or outcome_service_url is None, but grade needs to be sent back to TC! Ignoring.")
+                self._logger.error(
+                    "outcome_result_id or outcome_service_url is None, but grade needs to be sent back to TC! Ignoring.")
                 return
 
             obj.update({"outcome_service_url": outcome_service_url,
@@ -161,7 +163,7 @@ class WebAppSubmissionManager:
 
         if not copy:
             submissionid = submission["_id"]
-            username = submission["username"][0] # TODO: this may be inconsistent with add_job
+            username = submission["username"][0]  # TODO: this may be inconsistent with add_job
 
             # Remove the submission archive : it will be regenerated
             if submission.get("archive", None) is not None:
@@ -171,32 +173,37 @@ class WebAppSubmissionManager:
             username = self._user_manager.session_username()
             submission["username"] = [username]
             submission["submitted_on"] = datetime.now()
-            my_user_task = self._database.user_tasks.find_one({"courseid": task.get_course_id(), "taskid": task.get_id(), "username": username}, { "tried" : 1, "_id" : 0 })
+            my_user_task = self._database.user_tasks.find_one(
+                {"courseid": task.get_course_id(), "taskid": task.get_id(), "username": username},
+                {"tried": 1, "_id": 0})
             tried_count = my_user_task["tried"]
             inputdata["@attempts"] = str(tried_count + 1)
             inputdata["@username"] = username
             inputdata["@lang"] = self._user_manager.session_language()
             submission["input"] = self._gridfs.put(bson.BSON.encode(inputdata))
-            submission["tests"] = {} # Be sure tags are reinitialized
+            submission["tests"] = {}  # Be sure tags are reinitialized
             submissionid = self._database.submissions.insert(submission)
 
         jobid = self._client.new_job(1, task, inputdata,
                                      (lambda result, grade, problems, tests, custom, state, archive, stdout, stderr:
-                                      self._job_done_callback(submissionid, task, result, grade, problems, tests, custom, state, archive, stdout, stderr, copy)),
+                                      self._job_done_callback(submissionid, task, result, grade, problems, tests,
+                                                              custom, state, archive, stdout, stderr, copy)),
                                      "Frontend - {}".format(submission["username"]), debug, ssh_callback)
 
         # Clean the submission document in db
         self._database.submissions.update(
             {"_id": submission["_id"]},
             {"$set": {"jobid": jobid, "status": "waiting", "response_type": task.get_response_type()},
-             "$unset": {"result": "", "grade": "", "text": "", "tests": "", "problems": "", "archive": "", "state": "", "custom": ""}
+             "$unset": {"result": "", "grade": "", "text": "", "tests": "", "problems": "", "archive": "", "state": "",
+                        "custom": ""}
              })
 
         if not copy:
             self._logger.info("Replaying submission %s - %s - %s - %s", submission["username"], submission["courseid"],
                               submission["taskid"], submission["_id"])
         else:
-            self._logger.info("Copying submission %s - %s - %s - %s as %s", submission["username"], submission["courseid"],
+            self._logger.info("Copying submission %s - %s - %s - %s as %s", submission["username"],
+                              submission["courseid"],
                               submission["taskid"], submission["_id"], self._user_manager.session_username())
 
     def get_available_environments(self):
@@ -249,11 +256,14 @@ class WebAppSubmissionManager:
         # new_submission hook
         inputdata["@username"] = username
         inputdata["@lang"] = self._user_manager.session_language()
-        my_user_task = self._database.user_tasks.find_one({"courseid": task.get_course_id(), "taskid": task.get_id(), "username": username}, { "tried" : 1, "_id" : 0 })
+        my_user_task = self._database.user_tasks.find_one(
+            {"courseid": task.get_course_id(), "taskid": task.get_id(), "username": username}, {"tried": 1, "_id": 0})
         tried_count = my_user_task["tried"]
         inputdata["@attempts"] = str(tried_count + 1)
         # Retrieve input random
-        states = self._database.user_tasks.find_one({"courseid": task.get_course_id(), "taskid": task.get_id(), "username": username}, {"random": 1, "state": 1})
+        states = self._database.user_tasks.find_one(
+            {"courseid": task.get_course_id(), "taskid": task.get_id(), "username": username},
+            {"random": 1, "state": 1})
         inputdata["@random"] = states["random"] if "random" in states else []
         inputdata["@state"] = states["state"] if "state" in states else ""
 
@@ -268,7 +278,8 @@ class WebAppSubmissionManager:
 
         jobid = self._client.new_job(0, task, inputdata,
                                      (lambda result, grade, problems, tests, custom, state, archive, stdout, stderr:
-                                      self._job_done_callback(submissionid, task, result, grade, problems, tests, custom, state, archive, stdout, stderr, True)),
+                                      self._job_done_callback(submissionid, task, result, grade, problems, tests,
+                                                              custom, state, archive, stdout, stderr, True)),
                                      "Frontend - {}".format(username), debug, ssh_callback)
 
         self._database.submissions.update(
@@ -349,7 +360,8 @@ class WebAppSubmissionManager:
             submission["input"] = inp
             return submission
 
-    def get_feedback_from_submission(self, submission, only_feedback=False, show_everything=False, translation=gettext.NullTranslations()):
+    def get_feedback_from_submission(self, submission, only_feedback=False, show_everything=False,
+                                     translation=gettext.NullTranslations()):
         """
             Get the input of a submission. If only_input is False, returns the full submissions with a dictionnary object at the key "input".
             Else, returns only the dictionnary.
@@ -359,17 +371,20 @@ class WebAppSubmissionManager:
         if only_feedback:
             submission = {"text": submission.get("text", None), "problems": dict(submission.get("problems", {}))}
         if "text" in submission:
-            submission["text"] = ParsableText(submission["text"], submission["response_type"], show_everything, translation).parse()
+            submission["text"] = ParsableText(submission["text"], submission["response_type"], show_everything,
+                                              translation).parse()
         if "problems" in submission:
             for problem in submission["problems"]:
                 if isinstance(submission["problems"][problem], str):  # fallback for old-style submissions
-                    submission["problems"][problem] = (submission.get('result', 'crash'), ParsableText(submission["problems"][problem],
-                                                                                                       submission["response_type"],
-                                                                                                       show_everything, translation).parse())
+                    submission["problems"][problem] = (
+                    submission.get('result', 'crash'), ParsableText(submission["problems"][problem],
+                                                                    submission["response_type"],
+                                                                    show_everything, translation).parse())
                 else:  # new-style submission
-                    submission["problems"][problem] = (submission["problems"][problem][0], ParsableText(submission["problems"][problem][1],
-                                                                                                        submission["response_type"],
-                                                                                                        show_everything, translation).parse())
+                    submission["problems"][problem] = (
+                    submission["problems"][problem][0], ParsableText(submission["problems"][problem][1],
+                                                                     submission["response_type"],
+                                                                     show_everything, translation).parse())
         return submission
 
     def is_running(self, submissionid, user_check=True):
@@ -437,12 +452,12 @@ class WebAppSubmissionManager:
                         "submissions": {"$push": {
                             "_id": "$_id",
                             "result": "$result",
-                            "status" : "$status",
+                            "status": "$status",
                             "courseid": "$courseid",
                             "taskid": "$taskid",
                             "submitted_on": "$submitted_on"
                         }},
-            }},
+                        }},
             {"$project": {
                 "submitted_on": 1,
                 "submissions": {
@@ -452,7 +467,8 @@ class WebAppSubmissionManager:
                             "input": "$submissions",
                             "as": "submission",
                             "in": {
-                                "$cond": [{"$eq": ["$submitted_on", "$$submission.submitted_on"]}, "$$submission", False]
+                                "$cond": [{"$eq": ["$submitted_on", "$$submission.submitted_on"]}, "$$submission",
+                                          False]
                             }
                         }},
                         [False]
@@ -525,7 +541,8 @@ class WebAppSubmissionManager:
                         tar.addfile(info, fileobj=submission_yaml)
 
                         # If there is an archive, add it too
-                        if 'archive' in submission and submission['archive'] is not None and submission['archive'] != "":
+                        if 'archive' in submission and submission['archive'] is not None and submission[
+                            'archive'] != "":
                             subfile = self._gridfs.get(submission['archive'])
                             subtar = tarfile.open(fileobj=subfile, mode="r:gz")
 
@@ -615,6 +632,9 @@ class WebAppSubmissionManager:
         """
         return self._client.get_job_queue_info(jobid)
 
+    def get_agents_informations(self):
+        return self._client.get_registered_agents(), self._client.get_available_agents()
+
 
 def update_pending_jobs(database):
     """ Updates pending jobs status in the database """
@@ -622,4 +642,5 @@ def update_pending_jobs(database):
     # Updates the submissions that are waiting with the status error, as the server restarted
     database.submissions.update({'status': 'waiting'},
                                 {"$unset": {'jobid': ""},
-                                 "$set": {'status': 'error', 'grade': 0.0, 'text': 'Internal error. Server restarted'}}, multi=True)
+                                 "$set": {'status': 'error', 'grade': 0.0, 'text': 'Internal error. Server restarted'}},
+                                multi=True)
