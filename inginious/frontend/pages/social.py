@@ -41,7 +41,8 @@ class CallbackPage(INGIniousPage):
         auth_storage = self.user_manager.session_auth_storage().setdefault(auth_id, {})
         user = auth_method.callback(auth_storage)
         if user and auth_storage.get("method", "") == "signin":
-            self.user_manager.bind_user(auth_id, user)
+            if not self.user_manager.bind_user(auth_id, user):
+                raise web.seeother("/signin?binderror")
         elif user and auth_storage.get("method", "") == "share":
             submission = self.submission_manager.get_submission(auth_storage["submissionid"], True)
             if submission:
@@ -50,6 +51,8 @@ class CallbackPage(INGIniousPage):
                 auth_method.share(auth_storage, course, task, submission, self.user_manager.session_language())
             else:
                 raise web.notfound()
+        else:
+            raise web.seeother("/signin?callbackerror")
 
         raise web.seeother(auth_storage.get("redir_url", "/"))
 

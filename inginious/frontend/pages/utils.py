@@ -156,13 +156,20 @@ class INGIniousAuthPage(INGIniousPage):
 
             if not self.is_lti_page and self.user_manager.session_lti_info() is not None: #lti session
                 self.user_manager.disconnect_user()
-                return self.template_helper.get_renderer().auth(self.user_manager.get_auth_methods(), False)
+                return self.template_helper.get_renderer().auth(self.user_manager.get_auth_methods())
 
             return self.GET_AUTH(*args, **kwargs)
         elif self.preview_allowed(*args, **kwargs):
             return self.GET_AUTH(*args, **kwargs)
         else:
-            return self.template_helper.get_renderer().auth(self.user_manager.get_auth_methods(), False)
+            error = ''
+            if "binderror" in web.input():
+                error = _("An account using this email already exists and is not bound with this service. "
+                          "For security reasons, please log in via another method and bind your account in your profile.")
+            if "callbackerror" in web.input():
+                error = _("Couldn't fetch the required information from the service. Please check the provided "
+                          "permissions (name, email) and contact your INGInious administrator if the error persists.")
+            return self.template_helper.get_renderer().auth(self.user_manager.get_auth_methods(), error)
 
     def POST(self, *args, **kwargs):
         """
@@ -175,7 +182,7 @@ class INGIniousAuthPage(INGIniousPage):
 
             if not self.is_lti_page and self.user_manager.session_lti_info() is not None:  # lti session
                 self.user_manager.disconnect_user()
-                return self.template_helper.get_renderer().auth(self.user_manager.get_auth_methods_fields(), False)
+                return self.template_helper.get_renderer().auth(self.user_manager.get_auth_methods_fields())
 
             return self.POST_AUTH(*args, **kwargs)
         else:
@@ -184,11 +191,11 @@ class INGIniousAuthPage(INGIniousPage):
                 if self.user_manager.auth_user(user_input["login"].strip(), user_input["password"]) is not None:
                     return self.GET_AUTH(*args, **kwargs)
                 else:
-                    return self.template_helper.get_renderer().auth(self.user_manager.get_auth_methods(), True)
+                    return self.template_helper.get_renderer().auth(self.user_manager.get_auth_methods(), _("Invalid login/password"))
             elif self.preview_allowed(*args, **kwargs):
                 return self.POST_AUTH(*args, **kwargs)
             else:
-                return self.template_helper.get_renderer().auth(self.user_manager.get_auth_methods(), False)
+                return self.template_helper.get_renderer().auth(self.user_manager.get_auth_methods())
 
     def preview_allowed(self, *args, **kwargs):
         """
