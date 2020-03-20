@@ -8,7 +8,19 @@ import gettext
 
 from inginious.common.base import id_checker
 from inginious.common.hook_manager import HookManager
-from inginious.frontend.environment_types import get_env_type
+
+
+def _migrate_from_v_0_6(content):
+    """ Migrate a v0.6 task description to a v0.7+ task description, if needed """
+    if "environment" in content:
+        content["environment_id"] = content["environment"]
+        content["environment_type"] = "docker" if content["environment_id"] != "mcq" else "mcq"
+        del content["environment"]
+        content["environment_parameters"] = {"limits": content.get("limits", {}),
+                                             "run_cmd": content.get("run_cmd", ''),
+                                             "network_grading": content.get("network_grading", False),
+                                             "response_is_html": content.get('responseIsHTML', False)}
+    return content
 
 
 class Task(object):
@@ -19,7 +31,7 @@ class Task(object):
             Init the task. course is a Course object, taskid the task id, and content is a dictionnary containing the data needed to initialize the Task object.
             If init_data is None, the data will be taken from the course tasks' directory.
         """
-        content = self._migrate_from_v1(content)
+        content = _migrate_from_v_0_6(content)
 
         self._course = course
         self._taskid = taskid
@@ -28,13 +40,7 @@ class Task(object):
         self._data = content
         self._environment_id = self._data.get('environment_id', 'default')
         self._environment_type = self._data.get('environment_type', 'unknown')
-
-        env_type_obj = get_env_type(self._environment_type)
-
-        if env_type_obj is None:
-            raise Exception(_("Environment type {0} is unknown").format(self._environment_type))
-        self._environment_parameters = env_type_obj.load_task_environment_parameters(self._data.get("environment_parameters", {}))
-
+        self._environment_parameters = self._data.get("environment_parameters", {})
         if "problems" not in self._data:
             raise Exception("Tasks must have some problems descriptions")
 
@@ -101,7 +107,7 @@ class Task(object):
         return self._course
 
     def get_environment_parameters(self):
-        """ Returns the environment parameters, as returned by the loader """
+        """ Returns the raw environment parameters, which is a dictionnary that is envtype dependent. """
         return self._environment_parameters
 
     def get_response_type(self):
@@ -160,13 +166,3 @@ class Task(object):
 
         return task_problem_types.get(problem_content.get('type', ""))(self, problemid, problem_content)
 
-    def _migrate_from_v1(self, content):
-        if "environment" in content:
-            content["environment_id"] = content["environment"]
-            content["environment_type"] = "docker" if content["environment_id"] != "mcq" else "mcq"
-            del content["environment"]
-            content["environment_parameters"] = {"limits": content.get("limits", {}),
-                                                 "run_cmd": content.get("run_cmd", ''),
-                                                 "network_grading": content.get("network_grading", False),
-                                                 "response_is_html": content.get('responseIsHTML', False)}
-        return content
