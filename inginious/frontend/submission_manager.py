@@ -645,6 +645,10 @@ class WebAppSubmissionManager:
         """
         return self._client.get_job_queue_info(jobid)
 
+    def get_agents_informations(self):
+        """:return a list of available environments """
+        return self._client.get_registered_agents(), self._client.get_available_environments()
+
 
 def update_pending_jobs(database):
     """ Updates pending jobs status in the database """

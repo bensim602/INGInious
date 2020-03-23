@@ -1,90 +1,218 @@
-$def with (jobs_running, jobs_waiting, from_timestamp)
+$def with (jobs_running, jobs_waiting, from_timestamp,subs,subs_ten,subs_min,per_hour,available_agent_names,all_agent_names)
 
 $#
 $# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
 $# more information about the licensing of this file.
 $#
 
-$var title: $:_("Job queue")
+$var header:
+    <script src="$get_homepath(True)/static/js/libs/chart.min.js"></script>
+
+$var title: $:_("Queue")
 
 $# Start content
 $def NavbarF():
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item active"><a href="#"><i class="fa fa-dashboard"></i> $:_("Job queue")
+            <li class="breadcrumb-item active"><a href="#"><i class="fa fa-dashboard"></i> $:_("Queue")
                 <span class="sr-only">$:_("(current)")</span></a>
             </li>
         </ol>
     </nav>
 $var Navbar: $:NavbarF()
 
-<h2>$:_("Job queue")</h2>
-<p>$:_("This page shows a <strong>snapshot</strong> of the job queue.")</p>
+<h2>$:_("Queue")</h2>
 
-<h3>$:_("Running jobs")</h3>
-$if jobs_running is not None and len(jobs_running) > 0:
-    <table class="table table-striped">
-        <tr>
-            <th>$:_("Type")</th>
-            <th>$:_("Local client")</th>
-            <th>$:_("Agent name")</th>
-            <th>$:_("Name")</th>
-            <th>$:_("Launcher name")</th>
-            <th>$:_("Started at")</th>
-            <th>$:_("Timeout at")</th>
-        </tr>
-        $for (job_id, is_current_client_job, agent_name, info, launcher, started_at, max_time) in jobs_running:
-            <tr>
-                <td data-toggle="tooltip" data-placement="right" title="$job_id">Task</td>
-                <td>
-                    $if is_current_client_job:
-                        $:_("Yes")
-                    $else:
-                        $:_("No")
-                </td>
-                <td>$agent_name</td>
-                <td>$info</td>
-                <td>$launcher</td>
-                <td>$from_timestamp(started_at).strftime("%d/%m/%Y %H:%M:%S")</td>
-                <td>
-                    $if max_time >= 0:
-                        $from_timestamp(started_at+max_time).strftime("%d/%m/%Y %H:%M:%S")
-                    $else:
-                        $:_("No timeout set")
-                </td>
-            </tr>
-    </table>
-$else:
-    <p>$:_("There are no jobs running")</p>
 
-<h3>$:_("Jobs in queue")</h3>
-$if jobs_waiting is not None and len(jobs_waiting) > 0:
-    <table class="table table-striped">
-        <tr>
-            <th>$:_("Type")</th>
-            <th>$:_("Local")</th>
-            <th>$:_("Name")</th>
-            <th>$:_("Launcher name")</th>
-            <th>$:_("Maximum runtime in seconds")</th>
-        </tr>
-        $for (job_id, is_current_client_job, info, launcher, max_time) in jobs_waiting:
-        <tr>
-            <td data-toggle="tooltip" data-placement="right" title="$job_id">Task</td>
-            <td>
-                $if is_current_client_job:
-                    $:_("Yes")
-                $else:
-                    $:_("No")
-            </td>
-            <td>$info</td>
-            <td>$launcher</td>
-            <td>
-                $if max_time >= 0:
-                    $max_time
-                $else:
-                    $:_("No timeout set")
-            </td>
-        </tr>
-    </table>
-$else:
-    <p>$:_("There are no jobs waiting in queue")</p>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-8">
+            <h3>$:_("Submissions")</h3>
+            <form method="post">
+                <ul class="nav nav-tabs">
+                  <li class="nav-item active"><a class="nav-link" data-toggle="tab" href="#home">Active jobs</a></li>
+                  <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#menu1">Waiting jobs</a></li>
+                </ul>
+
+                <div class="tab-content">
+                  <div id="home" class="tab-pane container active">
+                    $if jobs_running is not None and len(jobs_running) > 0:
+                        <table class="table table-striped">
+                            <tr>
+                                <th>$:_("Type")</th>
+                                <th>$:_("Local client")</th>
+                                <th>$:_("Agent name")</th>
+                                <th>$:_("Name")</th>
+                                <th>$:_("Launcher name")</th>
+                                <th>$:_("Started at")</th>
+                                <th>$:_("Timeout at")</th>
+                                <th>$:_("Action")</th>
+                            </tr>
+                            $for (job_id, is_current_client_job, agent_name, info, launcher, started_at, max_end) in jobs_running:
+                                <tr>
+                                    <td data-toggle="tooltip" data-placement="right" title="$job_id">Task</td>
+                                    <td>
+                                        $if is_current_client_job:
+                                            $:_("Yes")
+                                        $else:
+                                            $:_("No")
+                                    </td>
+                                    <td>$agent_name</td>
+                                    <td>$info</td>
+                                    <td>$launcher</td>
+                                    <td>$from_timestamp(started_at).strftime("%d/%m/%Y %H:%M:%S")</td>
+                                    <td>$from_timestamp(max_end).strftime("%d/%m/%Y %H:%M:%S")</td>
+                                    $if user_manager.user_is_superadmin():
+                                        <td>
+                                            <button type="button" data-toggle="modal" data-job_id="$job_id" data-target="#kill_modal" class="btn btn-warning" title="Kill Job">
+                                                <i class="fa fa-remove">
+                                                </i>
+                                            </button>
+                                        </td>
+                                </tr>
+                        </table>
+                    $else:
+                        <p>$:_("There are no jobs running")</p>
+                  </div>
+                  <div id="menu1" class="tab-pane container fade">
+                    $if jobs_waiting is not None and len(jobs_waiting) > 0:
+                        <table class="table table-striped">
+                            <tr>
+                                <th>$:_("Type")</th>
+                                <th>$:_("Local")</th>
+                                <th>$:_("Name")</th>
+                                <th>$:_("Launcher name")</th>
+                                <th>$:_("Maximum runtime in seconds")</th>
+                                <th>$:_("Action")</th>
+                            </tr>
+                            $for (job_id, is_current_client_job, info, launcher, max_end) in jobs_waiting:
+                            <tr>
+                                <td data-toggle="tooltip" data-placement="right" title="$job_id">Task</td>
+                                <td>
+                                    $if is_current_client_job:
+                                        $:_("Yes")
+                                    $else:
+                                        $:_("No")
+                                </td>
+                                <td>$info</td>
+                                <td>$launcher</td>
+                                <td>$max_end</td>
+                                $if user_manager.user_is_superadmin():
+                                    <td>
+                                        <button type="button" data-toggle="modal" data-job_id="$job_id" data-target="#kill_modal" class="btn btn-warning" title="Kill Job">
+                                            <i class="fa fa-remove">
+                                            </i>
+                                        </button>
+                                    </td>
+                            </tr>
+                        </table>
+                    $else:
+                        <p>$:_("There are no jobs waiting in queue")</p>
+                  </div>
+
+                </div>
+            </form>
+        </div>
+        <div class="col-4">
+
+        </div>
+    </div>
+    $if user_manager.user_is_superadmin():
+        <h2>Admin Board</h2>
+        <div class="row">
+            <div class="col-8">
+                <h3>$:_("Submissions chart")</h3>
+                <canvas id="myChart" width="400"></canvas>
+
+            </div>
+            <div class="col-4">
+                <h3>$:_("Jobs Statistics")</h3>
+                <p> Last minute : $subs_min</p>
+                <p> Last 10 minutes : $subs_ten</p>
+                <p> Last 30 minutes : $subs</p>
+                <h3>$:_("Agents information")</h3>
+                <p>Available : $available_agent_names</p>
+                <p>Registered : $all_agent_names</p>
+            </div>
+        </div>
+</div>
+
+<div id="kill_modal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">$:_("Kill job") </h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p>$:_("Are you sure ?")</p>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="jobid" id="jobid">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">$:_("Cancel")</button>
+                    <button type="submit" name="reset" class="btn btn-danger">$:_("Kill")</button>
+                </div>
+            </div>
+        </div>
+</div>
+
+<script type="text/javascript">
+    $$('#kill_modal').on('show.bs.modal', function (event) {
+      $$('#jobid').val($$(event.relatedTarget).data('job_id'));
+    });
+    $$(".reset_modal").each(function(index) {
+        $$(this).tooltip({"placement": "bottom"});
+    });
+</script>
+<script>
+
+function get_label_table(){
+    let today = new Date();
+    let current_hour = today.getHours();
+    let table = [];
+    let hours = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23];
+    let index_current_hour = hours.indexOf(current_hour);
+    for (var i = index_current_hour+1; i < hours.length; i++) {
+      table.push(hours[i]);
+    }
+    for (var i = 0; i <= index_current_hour; i++) {
+      table.push(hours[i]);
+    }
+    return table;
+}
+
+function get_data_table(label_table,data){
+    let data_table = [];
+    for (var i = 0; i < label_table.length; i++) {
+        let label = label_table[i];
+        if(data[label]===undefined){
+            data_table.push(0);
+        }else{
+            data_table.push(data[label]);
+        }
+
+    }
+    return data_table;
+}
+var ctx = document.getElementById('myChart').getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    height: 100,
+    responsive:true,
+    maintainAspectRatio: false,
+    data: {
+        labels: get_label_table(),
+        datasets: [{
+            label: 'submissions',
+            data: get_data_table(get_label_table(),$per_hour),
+        }]
+    }
+});
+
+</script>
+
+
+
+
+

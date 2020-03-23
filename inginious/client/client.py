@@ -140,6 +140,8 @@ class Client(BetterParanoidPirateClient):
         self._queue_update_last_attempt_max = 3
         self._queue_cache = None
         self._queue_job_cache = {} #format is job_id: (nb_tasks_before (can be -1 == running), approx_wait_time_in_seconds)
+        self._agents_registered = {}
+        self._agents_available = {}
 
     async def _ask_queue_update(self):
         """ Send a ClientGetQueue message to the backend, if one is not already sent """
@@ -186,6 +188,14 @@ class Client(BetterParanoidPirateClient):
             nb_tasks += 1
 
         self._queue_job_cache = new_job_queue_cache
+        self._agents_registered = message.agents_registered
+        self._agents_available = message.agents_available
+
+    def get_registered_agents(self):
+        return self._agents_registered
+
+    def get_available_agents(self):
+        return self._agents_available
 
     def get_job_queue_snapshot(self):
         if self._queue_cache is not None:

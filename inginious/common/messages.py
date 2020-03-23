@@ -177,7 +177,10 @@ class BackendGetQueue(metaclass=MessageMeta, msgtype="backend_get_queue"):
         Send the status of the job queue to the client
     """
     def __init__(self, jobs_running: List[Tuple[ClientJobId, bool, str, str, str, int, int]],
-                       jobs_waiting: List[Tuple[ClientJobId, bool, str, str, int]]):
+                       jobs_waiting: List[Tuple[ClientJobId, bool, str, str, int]],
+                       agents_registered: Dict,
+                       agents_available: Dict
+                 ):
         """
         :param jobs_running: a list of tuples in the form
             (job_id, is_current_client_job, info, launcher, started_at, max_tuime)
@@ -200,6 +203,8 @@ class BackendGetQueue(metaclass=MessageMeta, msgtype="backend_get_queue"):
         """
         self.jobs_running = jobs_running
         self.jobs_waiting = jobs_waiting
+        self.agents_registered = agents_registered
+        self.agents_available = agents_available
 
 #################################################################
 #                                                               #
