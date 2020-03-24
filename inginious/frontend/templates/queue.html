@@ -151,8 +151,16 @@ $var Navbar: $:NavbarF()
                 <p> Last 10 minutes : $subs_ten</p>
                 <p> Last 30 minutes : $subs</p>
                 <h3>$:_("Agents information")</h3>
-                <p>Available : $available_agent_names</p>
-                <p>Registered : $all_agent_names</p>
+                <p>Available :</p>
+                <ul>
+                    $for elem in available_agent_names:
+                        <li>$elem</li>
+                </ul>
+                <p>Registered :</p>
+                <ul>
+                    $for elem in all_agent_names:
+                        <li>$elem</li>
+                </ul>
             </div>
         </div>
 </div>
@@ -198,16 +206,17 @@ function get_data_table(label_table,data){
     return data_table;
 }
 var ctx = document.getElementById('myChart').getContext('2d');
+var label_table = get_label_table();
 var myChart = new Chart(ctx, {
     type: 'bar',
     height: 100,
     responsive:true,
     maintainAspectRatio: false,
     data: {
-        labels: get_label_table(),
+        labels: label_table,
         datasets: [{
             label: 'submissions',
-            data: get_data_table(get_label_table(),$per_hour),
+            data: get_data_table(label_table,$per_hour),
         }]
     }
 });
