@@ -152,6 +152,20 @@ function filter_tag(tag) {
         }
     });
 }
+
+// [Source code integration]: show and hide the section when click on dropdown button
+function dropdown(header) {
+    const content_div = $$(header).closest(".section").children(".content");
+    const button = $$(header).children(".dropdown_button")
+
+    if ($$(button).hasClass("fa-caret-down")) {
+        $$(button).removeClass("fa-caret-down").addClass("fa-caret-left");
+        content_div.slideUp('fast')
+    } else {
+        $$(button).removeClass("fa-caret-left").addClass("fa-caret-down");
+        content_div.slideDown('fast')
+    }
+}
 </script>
 
 <style>
@@ -167,9 +181,9 @@ function filter_tag(tag) {
       margin: 5px
     }
 
-    /* [Source code integration]: remove ugly outline on dropdown button */
-    .dropdown_button:focus {
-        outline: none;
+    /* [Source code integration]: pointer for dropdown */
+    .section_header {
+        cursor: pointer;
     }
 </style>
 
@@ -187,11 +201,14 @@ $# [Source code integration]: add functions specific for course with section and
 $# print a non terminal section and the sections it contains
 $def print_sections_list(section, level):
     <div id="section_$:_(section['id'])" class="section sections-list mb-4">
-        <div class="section_header divided pr-0">
+        <div class="section_header d-flex justify-content-between divided pr-3" onclick="dropdown(this)">
             <span class="title h$level mr-3">
                 $:_(section["title"])
             </span>
             <span class="divider"></span>
+
+            <span style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-down close pl-3">
+            </span>
         </div>
         <div class="content ml-4">
             $:print_section(section["sections_list"], level +1)
@@ -205,9 +222,12 @@ $def print_tasks_list(section, level):
     $# [Source code integration]: add class and id
     <div id="section_$:_(id)" class="section tasks_list card mb-4">
         $# [Source code integration]: add class and id, modify title move tag to title, add dropdown button
-        <div class="section_header card-header d-flex justify-content-between pr-0">
+        <div class="section_header card-header d-flex justify-content-between pr-3" onclick="dropdown(this)">
             <span class="title">
                 $:_(section["title"])
+            </span>
+
+            <span style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-down close">
             </span>
         </div>
         <div class="content list-group list-group-flush">
