@@ -1,0 +1,129 @@
+$def with (course, course_structure, tasks, errors,validated)
+
+$#
+$# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
+$# more information about the licensing of this file.
+$#
+
+$#
+$# [Source code integration]: move file to inginious.frontend.templates.course_admin, change JS reference
+$#
+
+$var title: $:course.get_name(user_manager.session_language()) - $:_("Structure editor")
+
+$var Column: $:template_helper.call('course_admin_menu',course=course,current='structure_editor')
+
+$def NavbarF():
+    <nav aria-label="breadcrumb" xmlns="http://www.w3.org/1999/html">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="$get_homepath()/course/$course.get_id()">$course.get_name(user_manager.session_language())</a></li>
+            <li class="breadcrumb-item"><a href="$get_homepath()/admin/$course.get_id()" title=$:_('"Administration"') data-toggle="tooltip" data-placement="bottom">
+                <i class="fa fa-user-secret"></i></a></li>
+            <li class="breadcrumb-item active"><a href="#"><i class="fa fa-pencil"></i> $:_("Structure editor") <span class="sr-only">$:_("(current)")</span></a></li>
+        </ol>
+    </nav>
+$var Navbar: $:NavbarF()
+
+<!-- Local JavaScript -->
+<script src="$get_homepath()/plugins/course_structure/structure_editor.js" type="text/javascript" charset="utf-8"></script>
+
+
+<style>
+    /* line for sections */
+    .divided {
+      display: flex;
+      align-items: center;
+    }
+    .divider {
+      flex-grow: 1;
+      border-bottom: 1px solid lightgrey;
+      margin: 5px
+    }
+</style>
+
+<!-- Methods to print structure -->
+$def print_section(sections, level):
+    $for section in sections:
+        $if "sections_list" in section:
+            $:print_sections_list(section, level)
+        $else:
+            $if "tasks_list" in section:
+                $:print_tasks_list(section, level)
+
+$# print a non terminal section and the sections it contains
+$def print_sections_list(section, level):
+    <div id="section_$:_(section['id'])" class="section sections_list mb-4" data-level="$:(level)">
+        <div class="section_header handle d-flex justify-content-between divided pr-3">
+            <span class="title h$level mr-3">
+                $:_(section["title"])
+            </span>
+            <span class="divider"></span>
+
+            $:section_menu(False, True)
+        </div>
+        <div class="content ml-4">
+            $:print_section(section["sections_list"], level +1)
+        </div>
+    </div>
+
+$# print a terminal section and the tasks it contains
+$def print_tasks_list(section, level):
+    $ id = section['id']
+    <div id="section_$:_(id)" class="section tasks_list card mb-4" data-level="$:(level)" >
+        <div class="section_header handle card-header d-flex justify-content-between pr-3">
+            <span class="title">
+                $:_(section["title"])
+            </span>
+            <span style="display: none" class="divider"></span>
+
+            $:section_menu(True, False)
+        </div>
+        <div class="content list-group list-group-flush">
+            $for taskid in section["tasks_list"]:
+                $ task = tasks[taskid]
+                <div id="task_$:(taskid)" class="task handle list-group-item list-group-item-action d-flex">
+                    <div class="task_name p-0">
+                        $task.get_name(user_manager.session_language())
+                    </div>
+                </div>
+        </div>
+    </div>
+
+$def section_menu(tasks_list_option, sections_list_option):
+    <div class="dropdown ml-3">
+        <button type="button" style="font-size: 1.5rem;"
+                class="button fa fa-bars close border-transparent" data-toggle="dropdown">
+        </button>
+        <div class="dropdown-menu dropdown-menu-right rounded">
+
+        </div>
+    </div>
+
+<!-- Content -->
+<div id="course_structure" data-level="2" class="sections_list pb-3">
+    <h2>$:_("Structure editor")</h2>
+
+    $if errors is not None:
+        $for error in errors:
+            <div class="alert alert-danger" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                $error
+            </div>
+    $elif validated:
+        <div class="alert alert-success" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            $:_("Change saved.")
+        </div>
+
+    <div class="content">
+        $:print_section(course_structure, 3)
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <button class="btn btn-primary btn-block" onclick="submit();">
+            <i class="fa fa-download"></i> $:_("Save changes")
+        </button>
+    </div>
+</div>
