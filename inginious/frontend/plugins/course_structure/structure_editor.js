@@ -12,8 +12,14 @@ var task_renamed = {};
 /*****************************
  *     Renaming Elements     *
  *****************************/
-function rename_section(element) {
-    rename(element, function(element, value) {});
+function rename_section(element, new_section = false) {
+    endswith = function(element, value) {
+        if(new_section) {
+            $(element).closest(".section").attr("id","section_"+string_to_id(value));
+        }
+    };
+
+    rename(element, endswith);
 }
 
 function rename_task(element) {
@@ -42,6 +48,18 @@ function rename(element, endswith) {
             quit();
         }
     });
+}
+
+/**************************
+ *  Create a new section  *
+ **************************/
+function create_section(parent) {
+    const level = Number(parent.attr("data-level"));
+
+    const section = $("#empty_section").clone().show().appendTo(parent.children(".content"));
+    section.attr("data-level", level + 1);
+
+    rename_section(section.find(".title"), true);
 }
 
 /**********************
@@ -84,6 +102,18 @@ function submit() {
 /************************
  *  String manipulation  *
  ************************/
+function string_to_id(string) {
+    var ID = string.toLowerCase().replace(/\s/g, '_');
+    ID = ID.replace(/\W/g, '');
+    ID = ID.replace(/_+/g, '_');
+
+    if ($("#section_" + ID).length) {
+        for (i = 1; $("#section_" + ID + "_" + i).length; i++) {
+        }
+        ID = ID + "_" + i;
+    }
+    return ID ;
+}
 
 String.prototype.to_taskid = function () {
     return this.slice(5);

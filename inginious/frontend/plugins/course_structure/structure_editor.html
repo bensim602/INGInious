@@ -39,6 +39,10 @@ $var Navbar: $:NavbarF()
       border-bottom: 1px solid lightgrey;
       margin: 5px
     }
+
+    /* only display option applicable to the type of section */
+    .sections_list_option { display: none; }
+    .sections_list >div>div>div> .sections_list_option { display: block; }
 </style>
 
 <!-- Methods to print structure -->
@@ -98,6 +102,9 @@ $def section_menu(tasks_list_option, sections_list_option):
                 class="button fa fa-bars close border-transparent" data-toggle="dropdown">
         </button>
         <div class="dropdown-menu dropdown-menu-right rounded">
+            <a class="add_section sections_list_option dropdown-item" onclick="create_section($$(this).closest('.section'))">
+                <i class="fa fa-plus"></i> $:_("Add subsection")
+            </a>
             <a class="rename dropdown-item" onclick="rename_section($$(this).closest('.section_header').children('.title'))">
                 <i class="fa fa-pencil"></i> $:_("Rename")
             </a>
@@ -132,9 +139,35 @@ $def task_buttons():
 </div>
 
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-4">
+        <button class="btn btn-secondary btn-block" onclick="create_section($$('#course_structure'))">
+            <i class="fa fa-plus"></i> $:_("Add section")
+        </button>
+    </div>
+    <div class="col-md-4">
+        <button class="btn btn-danger btn-block" onclick="location.reload()">
+            <i class="fa fa-undo"></i> $:_("Cancel")
+        </button>
+    </div>
+    <div class="col-md-4">
         <button class="btn btn-primary btn-block" onclick="submit();">
             <i class="fa fa-download"></i> $:_("Save changes")
         </button>
+    </div>
+</div>
+
+<!-- Invisible element (for copy) -->
+<div style="display: none" id="empty_section" class="section tasks_list sections_list card mb-4">
+    <div class="section_header handle card-header d-flex justify-content-between pr-3">
+        <span class="title">
+            $:_("New section")
+        </span>
+        <span style="display: none" class="divider"></span>
+        $:section_menu(True, True)
+    </div>
+    <div data-level="0" class="content list-group list-group-flush">
+        <p class="section_placeholder text-center align-middle m-2">
+            $:_("This section is empty.")
+        </p>
     </div>
 </div>
