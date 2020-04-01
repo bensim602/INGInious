@@ -85,6 +85,9 @@ $def print_tasks_list(section, level):
                     <div class="task_name p-0">
                         $task.get_name(user_manager.session_language())
                     </div>
+                    <div class="ml-auto">
+                        $:task_buttons()
+                    </div>
                 </div>
         </div>
     </div>
@@ -95,9 +98,17 @@ $def section_menu(tasks_list_option, sections_list_option):
                 class="button fa fa-bars close border-transparent" data-toggle="dropdown">
         </button>
         <div class="dropdown-menu dropdown-menu-right rounded">
-
+            <a class="rename dropdown-item" onclick="rename_section($$(this).closest('.section_header').children('.title'))">
+                <i class="fa fa-pencil"></i> $:_("Rename")
+            </a>
         </div>
     </div>
+
+$def task_buttons():
+    <button class="rename_task btn bg-transparent p-0" onclick="rename_task($$(this).closest('.task').children('.task_name'))"
+            title=$:_('"Rename task"') style="font-size: 1em;" data-toggle="tooltip" data-placement="bottom">
+        <i class="fa fa-pencil text-muted "></i>
+    </button>
 
 <!-- Content -->
 <div id="course_structure" data-level="2" class="sections_list pb-3">

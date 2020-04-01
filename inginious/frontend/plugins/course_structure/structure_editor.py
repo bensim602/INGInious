@@ -28,12 +28,18 @@ class CourseEditor(INGIniousAdminPage):
         try:
             user_input = web.input()
             new_toc = json.loads(user_input["course_structure"])
+            task_renamed = json.loads(user_input["task_renamed"])
 
             valid, message = check_toc(course, new_toc)
             if valid:
                 update_toc_content(self.course_factory, courseid, new_toc)
             else:
                 errors.append(message)
+
+            for taskid, new_name in task_renamed.items():
+                task_data = self.task_factory.get_task_descriptor_content(courseid, taskid)
+                task_data["name"] = new_name
+                self.task_factory.update_task_descriptor_content(courseid, taskid, task_data)
         except:
             errors.append(_("Something wrong happened"))
 
