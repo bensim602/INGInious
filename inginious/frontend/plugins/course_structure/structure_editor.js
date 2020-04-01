@@ -115,6 +115,23 @@ function add_tasks_to_section(button) {
     }
 }
 
+/*********************
+ *  Delete elements  *
+ *********************/
+function delete_section(button) {
+    const section = $("#" + button.getAttribute('data-target'));
+
+    section.parent().closest(".sections_list");
+    section.remove();
+}
+
+function delete_task(button) {
+    button.mouseleave().focusout();
+
+    button.closest(".tasks_list");
+    button.closest(".task").remove();
+}
+
 /**********************
  *  Submit structure  *
  **********************/

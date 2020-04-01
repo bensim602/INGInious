@@ -118,6 +118,9 @@ $def section_menu(tasks_list_option, sections_list_option):
             <a class="rename dropdown-item" onclick="rename_section($$(this).closest('.section_header').children('.title'))">
                 <i class="fa fa-pencil"></i> $:_("Rename")
             </a>
+            <a class="delete dropdown-item" data-toggle="modal" data-target="#deleteSectionModal" onclick="$$('#delete_section').attr('data-target', this.closest('.section').id);">
+                <i class="fa fa-trash"></i> $:_("Delete")
+            </a>
         </div>
     </div>
 
@@ -126,6 +129,11 @@ $def task_buttons():
             title=$:_('"Rename task"') style="font-size: 1em;" data-toggle="tooltip" data-placement="bottom">
         <i class="fa fa-pencil text-muted "></i>
     </button>
+    <button class="delete_task btn bg-transparent p-0" onclick="delete_task($$(this))"
+            title=$:_('"Remove task"') style="font-size: 1em;" data-toggle="tooltip" data-placement="bottom">
+        <i class="fa fa-trash text-muted "></i>
+    </button>
+
 
 <!-- Content -->
 <div id="course_structure" data-level="2" class="sections_list pb-3">
@@ -170,6 +178,24 @@ $def task_buttons():
 </div>
 
 <!-- Modals -->
+<div class="modal fade" id="deleteSectionModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">$_("Delete section")</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>$_("This will delete the section and all its content.")</p>
+            </div>
+            <div class="modal-footer">
+                <button id="delete_section" class="btn btn-danger" type="button" onclick="delete_section(this)" data-dismiss="modal">$_("Confirm")</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 <div class="modal fade" id="addTaskModal" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
