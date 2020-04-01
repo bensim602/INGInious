@@ -24,11 +24,17 @@ $def NavbarF():
     </nav>
 $var Navbar: $:NavbarF()
 
+<!-- Latest Sortable, library for drag and drop-->
+<script src="http://SortableJS.github.io/Sortable/Sortable.js"></script>
+
 <!-- Local JavaScript -->
 <script src="$get_homepath()/plugins/course_structure/structure_editor.js" type="text/javascript" charset="utf-8"></script>
 
-
 <style>
+    /* remove ghost when dragging and change cursor for draggable element */
+    .sortable-drag { opacity: 0; }
+    .handle { cursor: move; }
+
     /* line for sections */
     .divided {
       display: flex;
@@ -233,7 +239,7 @@ $def task_buttons():
     </div>
     <div data-level="0" class="content list-group list-group-flush">
         <p class="section_placeholder text-center align-middle m-2">
-            $:_("This section is empty.")
+            $:_("Drag tasks here.")
         </p>
     </div>
 </div>
