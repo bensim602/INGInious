@@ -8,6 +8,7 @@
 //
 
 var dragged_from;
+var draggable_sections = {};
 var draggable_tasks = {};
 var task_renamed = {};
 var timeouts = [],  lastenter;
@@ -20,6 +21,7 @@ function rename_section(element, new_section = false) {
         if(new_section) {
             var section = $(element).closest(".section").attr("id","section_"+string_to_id(value));
 
+            draggable_sections[section[0].id] = make_sections_list_sortable(section);
             draggable_tasks[section[0].id] = make_tasks_list_sortable(section);
         }
     };
@@ -36,6 +38,7 @@ function rename_task(element) {
 }
 
 function rename(element, endswith) {
+    handle = $(element).closest(".handle").removeClass("handle");
     element.hide();
 
     input = $("<input>").attr({value: element.text().trim(), class: "form-control"}).insertBefore(element);
@@ -44,6 +47,7 @@ function rename(element, endswith) {
     quit = function () {
         element.text(input.val()).show();
         input.remove();
+        handle.addClass("handle");
         endswith(element, input.val());
     };
 
@@ -144,6 +148,20 @@ function delete_task(button) {
 /*******************************
  *  Adapt structure to change  *
  *******************************/
+function adapt_size(element) {
+    const level = Number($(element).parent().closest(".sections_list").attr("data-level")) + 1;
+    $(element).attr("data-level", level);
+
+    const title = $(element).children(".section_header").find(".title");
+    if (/h\d/.test(title.attr("class"))) {
+        title.attr("class", "title h" + level + " mr-3")
+    }
+
+    $(element).children(".content").children(".section").each(function () {
+        adapt_size(this, level + 1)
+    });
+}
+
 function content_modified(section) {
     if(section.hasClass("sections_list") && section.hasClass("tasks_list")){
         if(section.children(".content").children(".section").length){
@@ -152,10 +170,14 @@ function content_modified(section) {
         }
         if(section.children(".content").children(".task").length){
             empty_to_tasks(section);
+            draggable_sections[section[0].id].option("disabled", true);
         }
     } else if (section.hasClass("section") && section.children(".content").children().length === 0){
         if(section.hasClass("sections_list")) {
             draggable_tasks[section[0].id] = make_tasks_list_sortable(section);
+        }
+        if(section.hasClass("tasks_list")) {
+            draggable_sections[section[0].id] = make_sections_list_sortable(section);
         }
         section_to_empty(section);
     }
@@ -166,7 +188,7 @@ function section_to_empty(section) {
     const header = section.children(".section_header").removeClass("divided").addClass("card-header");
     header.children(".title").attr("class", "title");
     header.children(".divider").hide();
-
+    
     const text_placeholder = $("#empty_section").find(".section_placeholder").html().trim();
     const para = $("<p>").attr("class", "section_placeholder text-center align-middle m-2").html(text_placeholder);
     section.children(".content").removeClass("ml-4").addClass("list-group list-group-flush").append(para);
@@ -195,6 +217,10 @@ function empty_to_tasks(section) {
 $(function () {
     $(".tasks_list").each(function(){
         draggable_tasks[this.id] = make_tasks_list_sortable($(this));
+    });
+
+    $(".sections_list").each(function(){
+        draggable_sections[this.id] = make_sections_list_sortable($(this));
     });
 });
 
@@ -245,6 +271,34 @@ function make_tasks_list_sortable(element) {
             $('.tasks_list').children('.section_header').off('dragenter').off('dragleave');
             evt.to.parentElement.scrollIntoView();
         },
+    });
+}
+
+function make_sections_list_sortable(element) {
+    return new Sortable(element.children(".content")[0], {
+        group: 'sections_list',
+        animation: 150,
+        fallbackOnBody: false,
+        swapThreshold: 0.1,
+        dragoverBubble: true,
+        handle: ".handle",
+        onStart: function (evt) {
+            $(evt.item).children('.content').slideUp('fast');
+            $('.tasks_list').children('.content').slideUp('fast');
+            dragged_from = evt.from;
+        },
+        onEnd: function (evt) {
+            $(evt.item).children('.content').slideDown('fast');
+            $('.tasks_list').children('.content').slideDown('fast');
+            evt.item.scrollIntoView();
+        },
+        onChange: function (evt) {
+            adapt_size(evt.item);
+            content_modified($(dragged_from).closest(".section"));
+            content_modified($(evt.to).closest(".section"));
+
+            dragged_from = evt.to;
+        }
     });
 }
 
