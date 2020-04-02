@@ -18,9 +18,15 @@ from inginious.frontend.plugins.template.pages.template_admin.danger_zone import
 from inginious.frontend.plugins.template.pages.template_admin.utils import CourseRedirect, TemplateTaskListPage, \
     TemplateEditTask, TemplateTaskFiles, TemplateTaskFileUpload, TemplateTagsPage, template_structure_editor_page
 
+from inginious.frontend.plugins.template.pages.course_admin.templates import CourseAdminTemplates
+
 
 def main_menu(template_helper):
     return str(template_helper.get_custom_renderer('frontend/plugins/template', layout=False).main_menu())
+
+
+def course_admin_menu(course):
+    return "templates", "<i class='fa fa-file fa-fw'></i>&nbsp; " + _("Templates")
 
 
 def init(plugin_manager, course_factory, _, plugin_config):
@@ -50,4 +56,7 @@ def init(plugin_manager, course_factory, _, plugin_config):
     plugin_manager.add_page('/edit_template/([^/]+)/tags', TemplateTagsPage)
     plugin_manager.add_page('/edit_template/([^/]+)/danger', TemplateDangerZonePage)
     plugin_manager.add_page('/edit_template/([^/]+)/structure_editor', template_structure_editor_page())
+
+    plugin_manager.add_hook("course_admin_menu", course_admin_menu)
+    plugin_manager.add_page('/admin/([^/]+)/templates', CourseAdminTemplates)
 

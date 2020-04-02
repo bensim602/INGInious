@@ -1,0 +1,37 @@
+$def with (course, error)
+
+$#
+$# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
+$# more information about the licensing of this file.
+$#
+
+$# [Source code integration]: move to inginious.frontend.templates.template_admin
+
+$var title: $:course.get_name(user_manager.session_language()) - $:_("Templates")
+
+$var Column: $:template_helper.call('course_admin_menu',course=course,current='templates')
+
+$def NavbarF():
+    <nav aria-label="breadcrumb" xmlns="http://www.w3.org/1999/html">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.course_page/$course.get_id()">$course.get_name(user_manager.session_language())</a></li>
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.admin_page/$course.get_id()" title=$:_('"Administration"') data-toggle="tooltip" data-placement="bottom">
+                <i class="fa fa-user-secret"></i></a></li>
+            <li class="breadcrumb-item active"><a href="#"><i class="fa fa-file"></i> $:_("Templates") <span class="sr-only">$:_("(current)")</span></a></li>
+        </ol>
+    </nav>
+$var Navbar: $:NavbarF()
+
+<h2>$:_("Export this course as template")</h2>
+$if error:
+    <div class="alert alert-danger" role="alert">$:_("Failed to create the template.")</div>
+
+<form class="form row mt-4" role="form" method="post">
+    <div class="form-group col-sm-8">
+        <label class="sr-only" for="new_template_id">$:_("Course")</label>
+        <input name="new_template_id" type="text" class="form-control" id="new_template_id" placeholder="$:_('New template id')">
+    </div>
+    <div class="form-group col-sm-4">
+        <button type="submit" class="btn btn-block btn-primary">$:_("Create new template")</button>
+    </div>
+</form>
