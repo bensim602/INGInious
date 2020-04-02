@@ -1,0 +1,210 @@
+$def with (template, structure, success, message)
+
+$#
+$# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
+$# more information about the licensing of this file.
+$#
+
+$# [Source code integration]: move to inginious.frontend.templates
+
+$var title: $:template.get_name(user_manager.session_language())
+
+$ admin = user_manager.has_admin_rights_on_course(template) and not template.get_id().endswith("_g1t")
+
+$# Left column content
+$def ColumnF():
+    <div class="card mb-3">
+        <div class="card-header">
+           $_("Skills")
+        </div>
+        <div class="list-group list-group-flush p-3">
+            $if template.get_template_skills(user_manager.session_language()):
+                <ul class="m-0">
+                    $for skill in template.get_template_skills(user_manager.session_language())
+                        <li>$skill</li>
+                </ul>
+            $else:
+                $_("Not available")
+        </div>
+    </div>
+
+    $if admin:
+        <div class="list-group">
+            <a class="list-group-item list-group-item-action list-group-item-info" href="$get_homepath()/$template.admin_page/$template.get_id()">
+                <i class="fa fa-user-secret fa-fw"></i>&nbsp; $:_("Edit template")
+            </a>
+        </div>
+
+$var Column: $:ColumnF()
+
+$def NavbarF():
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="$get_homepath()/template" title="Template list" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-th-list"></i></a></li>
+            <li class="breadcrumb-item active"><a href="#">$template.get_name(user_manager.session_language()) <span class="sr-only">$:_("(current)")</span></a></li>
+        </ol>
+    </nav>
+$var Navbar: $:NavbarF()
+
+<script>
+$$(function () {
+    $$(".content").hide();
+});
+function dropdown(header) {
+    const content_div = $$(header).closest(".section").children(".content");
+    const button = $$(header).children(".dropdown_button")
+
+    if ($$(button).hasClass("fa-caret-down")) {
+        $$(button).removeClass("fa-caret-down").addClass("fa-caret-left");
+        content_div.slideUp('fast')
+    } else {
+        $$(button).removeClass("fa-caret-left").addClass("fa-caret-down");
+        content_div.slideDown('fast')
+    }
+}
+</script>
+
+<style>
+    /* [Source code integration]: add line after section title */
+    .divided {
+      display: flex;
+      align-items: center;
+    }
+
+    .divider {
+      flex-grow: 1;
+      border-bottom: 1px solid lightgrey;
+      margin: 5px
+    }
+
+    .section_header {
+        cursor: pointer;
+    }
+
+</style>
+
+$# Recursively print a list of sections and their content
+$def print_section(sections, level=3):
+    $for section in sections:
+        $if "sections_list" in section:
+            $:print_sections_list(section, level)
+        $else:
+            $if "tasks_list" in section:
+                $:print_tasks_list(section, level)
+
+
+$# print a non terminal section and the sections it contains
+$def print_sections_list(section, level):
+    $ id = section['id']
+    <div id="section_$id" class="section sections-list mb-4">
+        <div class="section_header divided pr-0" onclick="dropdown(this)">
+            <span class="title h$level mr-3">
+                $:_(section["title"])
+            </span>
+            <span class="divider"></span>
+
+            <span
+                    style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-left close col-1">
+            </span>
+        </div>
+        <div class="content ml-4">
+            <h6> $_("Description:")</h6>
+            <div class="ml-4">
+                $:template.get_section_description(user_manager.session_language(), id)
+            </div>
+            $if template.get_section_skills(user_manager.session_language(), id):
+                <h6> $_("Skills:")</h6>
+                <ul class="ml-4">
+                    $for skill in template.get_section_skills(user_manager.session_language(), id)
+                        <li>$skill</li>
+                </ul>
+        </div>
+        <div class="ml-4">
+            $:print_section(section["sections_list"], level +1)
+        </div>
+    </div>
+
+$# print a terminal section and the tasks it contains
+$def print_tasks_list(section, level):
+    $ id = section['id']
+    $# [Source code integration]: add class and id
+    <div id="section_$:_(id)" class="section tasks_list card mb-4">
+        $# [Source code integration]: add class and id, modify title move tag to title, add dropdown button
+        <div class="section_header card-header d-flex justify-content-between pr-0" onclick="dropdown(this)">
+            <span class="title">
+                $:_(section["title"])
+            </span>
+
+            <span style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-left close col-1">
+            </span>
+        </div>
+        <div class="content list-group list-group-flush p-3">
+            <h6> $_("Description:")</h6>
+            <div class="ml-4">
+                $:template.get_section_description(user_manager.session_language(), id)
+            </div>
+            $if template.get_section_skills(user_manager.session_language(), id):
+                <h6> $_("Skills:")</h6>
+                <ul class="ml-4">
+                    $for skill in template.get_section_skills(user_manager.session_language(), id)
+                        <li>$skill</li>
+                </ul>
+        </div>
+    </div>
+
+$# Start content
+<h2>$:template.get_name(user_manager.session_language())</h2>
+
+$if success == True:
+    <div class="alert alert-success alert-dismissable" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        $message
+    </div>
+$if success == False:
+    <div class="alert alert-danger alert-dismissable" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        $message
+    </div>
+
+<h3>$_("Template description")</h3>
+<div class="ml-5 mb-3">
+    <span>
+        $:template.get_template_description(user_manager.session_language())
+    </span>
+</div>
+
+<h3>$_("Template content")</h3>
+
+<div class="ml-4">
+    $if template.get_descriptor().get("description", ""):
+        <div class="mb-3" id="desc_accord" role="tablist" aria-multiselectable="true">
+            <div class="card">
+                <div class="card-header" id="course_desc_head">
+                    <div style="cursor: pointer" data-toggle="collapse" data-parent="#desc_accord" href="#course_desc" aria-expanded="false" aria-controls="course_desc">
+                        <i class="fa fa-fw fa-chevron-right"></i>$:_("About this course")
+                    </div>
+                </div>
+                <div id="course_desc" class="collapse" role="tabpanel" aria-labelledby="course_desc_head">
+                    <div class="card-body">
+                        $:template.get_description(user_manager.session_language())
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    $:print_section(structure)
+</div>
+
+<hr/>
+
+<form class="form row" method="post">
+    <div class="form-group col-sm-8">
+        <input name="templateid" type="hidden" id="templateid" value="$template.get_id()">
+        <input name="new_courseid" type="text" class="form-control" id="new_courseid" placeholder='$_("New course id")'>
+    </div>
+    <div class="form-group col-sm-4">
+        <button type="submit" class="btn btn-block btn-primary">$:_("Create new Course from template")</button>
+    </div>
+</form>
+
+

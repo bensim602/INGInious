@@ -10,6 +10,7 @@ from inginious.frontend.plugins.template.template_factory import create_factorie
 from inginious.frontend.plugins.template.template_frontend import WebAppTemplate
 
 from inginious.frontend.plugins.template.pages.template_list import TemplateList
+from inginious.frontend.plugins.template.pages.template import TemplatePage
 
 
 def main_menu(template_helper):
@@ -31,4 +32,5 @@ def init(plugin_manager, course_factory, _, plugin_config):
 
     plugin_manager.add_hook("main_menu", main_menu)
     plugin_manager.add_page('/template', TemplateList)
+    plugin_manager.add_page('/template/([^/]+)', TemplatePage)
 
