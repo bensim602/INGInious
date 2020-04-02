@@ -12,6 +12,12 @@ from inginious.frontend.plugins.template.template_frontend import WebAppTemplate
 from inginious.frontend.plugins.template.pages.template_list import TemplateList
 from inginious.frontend.plugins.template.pages.template import TemplatePage
 
+from inginious.frontend.plugins.template.pages.template_admin.settings import TemplateSettings
+from inginious.frontend.plugins.template.pages.template_admin.description import TemplateDescription
+from inginious.frontend.plugins.template.pages.template_admin.danger_zone import TemplateDangerZonePage
+from inginious.frontend.plugins.template.pages.template_admin.utils import CourseRedirect, TemplateTaskListPage, \
+    TemplateEditTask, TemplateTaskFiles, TemplateTaskFileUpload, TemplateTagsPage, template_structure_editor_page
+
 
 def main_menu(template_helper):
     return str(template_helper.get_custom_renderer('frontend/plugins/template', layout=False).main_menu())
@@ -33,4 +39,15 @@ def init(plugin_manager, course_factory, _, plugin_config):
     plugin_manager.add_hook("main_menu", main_menu)
     plugin_manager.add_page('/template', TemplateList)
     plugin_manager.add_page('/template/([^/]+)', TemplatePage)
+
+    plugin_manager.add_page('/edit_template/([^/]+)', CourseRedirect)
+    plugin_manager.add_page('/edit_template/([^/]+)/settings', TemplateSettings)
+    plugin_manager.add_page('/edit_template/([^/]+)/description', TemplateDescription)
+    plugin_manager.add_page('/edit_template/([^/]+)/tasks', TemplateTaskListPage)
+    plugin_manager.add_page('/edit_template/([^/]+)/edit/task/([^/]+)', TemplateEditTask)
+    plugin_manager.add_page('/edit_template/([^/]+)/edit/task/([^/]+)/files', TemplateTaskFiles)
+    plugin_manager.add_page('/edit_template/([^/]+)/edit/task/([^/]+)/dd_upload', TemplateTaskFileUpload)
+    plugin_manager.add_page('/edit_template/([^/]+)/tags', TemplateTagsPage)
+    plugin_manager.add_page('/edit_template/([^/]+)/danger', TemplateDangerZonePage)
+    plugin_manager.add_page('/edit_template/([^/]+)/structure_editor', template_structure_editor_page())
 

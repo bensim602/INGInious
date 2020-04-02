@@ -1,0 +1,176 @@
+$def with (template,structure,errors,saved)
+
+$#
+$# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
+$# more information about the licensing of this file.
+$#
+
+$# [Source code integration]: move to inginious.frontend.templates.template_admin
+
+$var title: $:template.get_name(user_manager.session_language()) - $:_("Description")
+
+$def ColumnF():
+    $:template_helper.call('course_admin_menu',course=template,current='description')
+    <button class="btn btn-primary btn-block mt-3 task_edit_submit_button" type="submit" form="edit_course_form"><i class="fa fa-download"></i> $_("Save changes")</button>
+$var Column: $:ColumnF()
+
+$def NavbarF():
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="$get_homepath()/$template.course_page/$template.get_id()">$template.get_name(user_manager.session_language())</a></li>
+            <li class="breadcrumb-item"><a href="$get_homepath()/$template.admin_page/$template.get_id()" title=$:_('"Administration"') data-toggle="tooltip" data-placement="bottom">
+                <i class="fa fa-user-secret"></i></a></li>
+            <li class="breadcrumb-item active"><a href="#"><i class="fa fa-info"></i> $:_("Template description") <span class="sr-only">$:_("(current)")</span></a></li>
+        </ol>
+    </nav>
+$var Navbar: $:NavbarF()
+
+<script>
+    $$(function () {
+      $$(".content").hide();
+    });
+    function dropdown(button) {
+        const content_div = $$(button).closest(".section").children(".content");
+
+        if ($$(button).hasClass("fa-caret-down")) {
+            $$(button).removeClass("fa-caret-down").addClass("fa-caret-left");
+            content_div.slideUp('fast')
+        } else {
+            $$(button).removeClass("fa-caret-left").addClass("fa-caret-down");
+            content_div.slideDown('fast')
+        }
+    }
+</script>
+
+<style>
+    /* [Source code integration]: add line after section title */
+    .divided {
+      display: flex;
+      align-items: center;
+    }
+
+    .divider {
+      flex-grow: 1;
+      border-bottom: 1px solid lightgrey;
+      margin: 5px
+    }
+
+    /* [Source code integration]: remove ugly outline on dropdown button */
+    .dropdown_button:focus {
+        outline: none;
+    }
+</style>
+
+<h2>$:_("Template description")</h2>
+$if errors is not None:
+    $for error in errors:
+        <div class="alert alert-danger" role="alert">$error</div>
+$elif saved:
+    <div class="alert alert-success" role="alert">$:_("Descriptions saved.")</div>
+
+$# Recursively print a list of sections and their content
+$def print_section(sections, level=4):
+    $for section in sections:
+        $if "sections_list" in section:
+            $:print_sections_list(section, level)
+        $else:
+            $if "tasks_list" in section:
+                $:print_tasks_list(section, level)
+
+$def print_sections_list(section, level):
+    $ id = section['id']
+    <div id="section_$id" class="section sections-list mb-4">
+        <div class="section_header divided pr-3">
+            <span class="title h$level mr-3">
+                $:_(section["title"])
+            </span>
+            <span class="divider"></span>
+
+            <button type="button" onclick="dropdown(this)"
+                    style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-left close border-transparent col-1">
+            </button>
+        </div>
+        <div class="content ml-4">
+            <div class="form-group row">
+                <label for="description_section_$id" class="col-sm-2 control-label">$:_("Section description")</label>
+                <div class="col-sm-10">
+                    <textarea id="description_section_$id" class="code-editor form-control" name="description_section_$id"
+                              data-x-language="rst" data-x-lines="10">${template.get_structure_description().get(id, "No description available.")}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="skills_section_$id" class="col-sm-2 control-label">$:_("Section skills")</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="skills_section_$id" name="skills_section_$id"
+                           placeholder=$:_('"Skills for the section, separated by commas"') value="$','.join(template.get_structure_skills().get(id,  []))">
+                </div>
+            </div>
+        </div>
+        <div class="ml-4">
+            $:print_section(section["sections_list"], level +1)
+        </div>
+    </div>
+
+$# print a terminal section and the tasks it contains
+$def print_tasks_list(section, level):
+    $ id = section['id']
+    <div id="section_$:_(id)" class="section tasks_list card mb-4">
+        <div class="section_header card-header d-flex justify-content-between pr-3">
+            <span class="title">
+                $:_(section["title"])
+            </span>
+
+            <button type="button" onclick="dropdown(this)"
+                    style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-left close border-transparent col-1">
+            </button>
+        </div>
+        <div class="content list-group list-group-flush p-3">
+            <div class="form-group row">
+                <label for="description_section_$id" class="col-sm-2 control-label">$:_("Section description")</label>
+                <div class="col-sm-10">
+                    <textarea id="description_section_$id" class="code-editor form-control" name="description_section_$id"
+                              data-x-language="rst" data-x-lines="10">${template.get_structure_description().get(id, "No description available.")}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="skills_section_$id" class="col-sm-2 control-label">$:_("Section skills")</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="skills_section_$id" name="skills_section_$id"
+                           placeholder=$:_('"Skills for the section, separated by commas"') value="$','.join(template.get_structure_skills().get(id,  []))">
+                </div>
+            </div>
+        </div>
+    </div>
+
+<form id="edit_course_form" action="$get_homepath()/$template.admin_page/${template.get_id()}/description" method="post" class="mt-4">
+    <div class="form-group row">
+        <label for="short_description" class="col-sm-2 control-label">$:_("Short description (max 250 characters)")</label>
+        <div class="col-sm-10">
+            <textarea class="form-control" id="short_description" name="short_description" placeholder=$:_('"Short description of the template"')
+                      rows="3" maxlength="250">$template.get_template_descriptor().get("short_description", "No description available.")</textarea>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="description" class="col-sm-2 control-label">$:_("Template description")</label>
+        <div class="col-sm-10">
+            <textarea id="description" class="code-editor form-control" name="description" data-x-language="rst"
+                      data-x-lines="10">${template.get_template_descriptor().get("description", "No description available.")}</textarea>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="skills" class="col-sm-2 control-label">$:_("Template skills")</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="skills" name="skills" placeholder=$:_('"Skills for the template, separated by commas"')
+                   value="$','.join(template.get_template_descriptor().get('skills', []))">
+        </div>
+    </div>
+    <h3>Structure description</h3>
+    <div class="ml-4 mb-3">
+        $if len(structure) == 1 and structure[0]["id"] == "tasks-list":
+            <span> $_("No structure for this template")</span>
+        $else:
+            $:print_section(structure)
+    </div>
+
+    <button class="btn btn-primary btn-block" type="submit"><i class="fa fa-download"></i> $:_("Save changes")</button>
+</form>

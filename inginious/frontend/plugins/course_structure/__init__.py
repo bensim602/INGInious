@@ -16,6 +16,12 @@ def switch_view(course, template_helper):
 def course_admin_menu(course):
     return "structure_editor", "<i class='fa fa-pencil fa-fw'></i>&nbsp; " + _("Structure editor")
 
+
+# relative to template plugin but dependant on this plugin
+def template_admin_menu(course):
+    return "structure_editor", "<i class='fa fa-pencil fa-fw'></i>&nbsp; " + _("Structure editor")
+
+
 class StaticMockPage(object):
     """Get the local javascript file"""
     def GET(self):
@@ -35,5 +41,6 @@ def init(plugin_manager, _, _2, _3):
     plugin_manager.add_page('/course_section/([^/]+)', CoursePage)
 
     plugin_manager.add_hook("course_admin_menu", course_admin_menu)
+    plugin_manager.add_hook("template_admin_menu", template_admin_menu)
     plugin_manager.add_page('/admin/([^/]+)/structure_editor', CourseEditor)
     plugin_manager.add_page('/plugins/course_structure/structure_editor.js', StaticMockPage)

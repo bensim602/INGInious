@@ -100,3 +100,27 @@ def get_course_structure(course, orelse=None):
     else:
         order(course_structure)
     return course_structure
+
+
+# [Source code integration]: move to WebAppCourse as instance method, replace course by self
+def get_ids(course):
+    """
+    :param course: the course in which the toc is
+    :return: all the ids of the sections and modify the structure such that there is no duplicated ids
+    """
+    return get_sections_ids(get_toc(course))
+
+
+# [Source code integration]: move to WebAppCourse
+def get_sections_ids(sections):
+    """
+    :param ids:
+    :param sections: the sections to inspect
+    :return: the ids of the sections and their subsections and modify the structure such that there is no duplicated ids
+    """
+    ids = []
+    for section in sections:
+        ids.append(section["id"])
+        if "sections_list" in section:
+            ids += get_sections_ids(section["sections_list"])
+    return ids

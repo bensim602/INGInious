@@ -1,0 +1,76 @@
+$def with (course, thehash, msg, error)
+
+$#
+$# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
+$# more information about the licensing of this file.
+$#
+
+$# [Source code integration]: move to inginious.frontend.templates.template_admin
+
+$var title: $:_("Danger zone")
+
+$var Column: $:template_helper.call('course_admin_menu',course=course,current='danger')
+
+$def NavbarF():
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.course_page/$course.get_id()">$course.get_name(user_manager.session_language())</a></li>
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.admin_page/$course.get_id()" title="$:_('Administration')" data-toggle="tooltip" data-placement="bottom">
+                <i class="fa fa-user-secret"></i></a></li>
+            <li class="breadcrumb-item active"><a href="#"><i class="fa fa-bomb"></i> $:_("Danger zone") <span class="sr-only">$:_("(current)")</span></a></li>
+        </ol>
+    </nav>
+$var Navbar: $:NavbarF()
+
+<h2>$:_("Danger zone")</h2>
+$if error:
+    <div class="alert alert-warning alert-dismissable" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        $:msg
+    </div>
+$elif msg:
+    <div class="alert alert-success alert-dismissable" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        $:msg
+    </div>
+
+<div role="tabpanel" class="tab-pane card-body" id="tab_delete_course">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            $:_("Delete template")
+        </div>
+        <div class="card-body">
+            $:_("<p> This will <b>permanently</b> remove the template from INGInious.</p><p>To confirm your will, please type the template id below :</p>")
+            <form class="form-horizontal" method="post">
+                <input type="hidden" name="token" value="$thehash">
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="text" placeholder="template id" name="courseid" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" data-toggle="modal" data-target="#delete_modal" class="btn btn-block btn-danger">
+                            <i class="fa fa-trash"></i> $:_("Delete template")
+                        </button>
+                    </div>
+                </div>
+                <div id="delete_modal" class="modal fade">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title">$:_("Delete course")</h4>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                            <div class="modal-body">
+                                $:_("<p>This will <b>permanently</b> remove the template from INGInious. Are you really sure ?</p>")
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">$:_("Cancel")</button>
+                                <button type="submit" name="deleteall" class="btn btn-danger">$:_("Delete template")</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,70 @@
+$def with (course,errors,saved)
+
+$#
+$# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
+$# more information about the licensing of this file.
+$#
+
+$# [Source code integration]: move to inginious.frontend.templates.template_admin
+
+$var title: $:course.get_name(user_manager.session_language()) - $:_("Settings")
+
+$var Column: $:template_helper.call('course_admin_menu',course=course,current='settings')
+
+$def NavbarF():
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.course_page/$course.get_id()">$course.get_name(user_manager.session_language())</a></li>
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.admin_page/$course.get_id()" title=$:_('"Administration"') data-toggle="tooltip" data-placement="bottom">
+                <i class="fa fa-user-secret"></i></a></li>
+            <li class="breadcrumb-item active"><a href="#"><i class="fa fa-cog"></i> $:_("Template settings") <span class="sr-only">$:_("(current)")</span></a></li>
+        </ol>
+    </nav>
+$var Navbar: $:NavbarF()
+
+<h2>$:_("Template settings")</h2>
+$if errors is not None:
+    $for error in errors:
+        <div class="alert alert-danger" role="alert">$error</div>
+$elif saved:
+    <div class="alert alert-success" role="alert">$:_("Settings saved.")</div>
+<form id="edit_course_form" action="$get_homepath()/$course.admin_page/${course.get_id()}/settings" method="post">
+    <div class="form-group row">
+        <label for="name" class="col-sm-2 control-label">$:_("Name")</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="name" name="name" placeholder=$:_('"title"') value="$course.get_name(user_manager.session_language())">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="editors" class="col-sm-2 control-label">$:_("Template editors")</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="editors" name="editors" placeholder=$:_('"Usernames of the editors, separated by commas"')
+                   value="$','.join(course.get_admins())">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="description" class="col-sm-2 control-label">$:_("Description")</label>
+        <div class="col-sm-10">
+            <textarea id="description" class="code-editor form-control" name="description" data-x-language="rst" data-x-lines="10">${course.get_descriptor().get('description','')}</textarea>
+        </div>
+    </div>
+    <div class="formelements-group row">
+        <label for="private" class="col-sm-2 control-label">$:_("Template visibility")</label>
+        <div class="col-sm-10">
+            <label>
+                <input type="radio" value="true" name="private" id="private"
+                    $if course.is_private():
+                        checked="checked"
+                /> $:_("Private")
+            </label><br/>
+            <label>
+                <input type="radio" value="false" name="private"
+                    $if not course.is_private():
+                        checked="checked"
+                /> $:_("Public")
+            </label>
+        </div>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit"><i class="fa fa-download"></i> $:_("Save changes")</button>
+    
+</form>
