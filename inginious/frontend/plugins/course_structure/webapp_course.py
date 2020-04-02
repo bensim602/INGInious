@@ -124,3 +124,27 @@ def get_sections_ids(sections):
         if "sections_list" in section:
             ids += get_sections_ids(section["sections_list"])
     return ids
+
+
+# [Source code integration]: move to WebAppCourse as instance method, replace course by self
+def get_tasks_id(course):
+    """
+    :param course: the course in which the toc is
+    :return: all the ids of the tasks
+    """
+    return get_sections_tasks_ids(get_toc(course))
+
+
+# [Source code integration]: move to WebAppCourse
+def get_sections_tasks_ids(sections):
+    """
+    :param sections: the sections to inspect
+    :return: the ids of the tasks and the one of their subsections
+    """
+    ids = []
+    for section in sections:
+        if "sections_list" in section:
+            ids += get_sections_tasks_ids(section["sections_list"])
+        elif "tasks_list" in section:
+            ids += section["tasks_list"].keys()
+    return ids

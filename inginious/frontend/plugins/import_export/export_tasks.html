@@ -1,0 +1,204 @@
+$def with (course, structure, tasks, errors, validated)
+
+$#
+$# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
+$# more information about the licensing of this file.
+$#
+
+$if errors:
+    $for error in errors:
+        <div class="alert alert-danger" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            $error
+        </div>
+$elif validated:
+    <div class="alert alert-success" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        $:_("Export successful.")
+    </div>
+
+<script>
+$$(function () {
+    $$(".section-checkbox").change(function(){
+        tab1_id = $$(this).closest(".section").attr("id").slice(0, -1) + "1";
+       if($$(this).is(":checked")){
+           $$(this).closest(".section").find(".section-checkbox").prop("checked", true);
+           $$("#" + tab1_id).find(".task").addClass("bg-primary text-white").find("input").prop("checked", true);
+       } else {
+           $$(this).closest(".section").find(".section-checkbox").prop("checked", false);
+           $$("#" + tab1_id).find(".task").removeClass("bg-primary text-white").find("input").prop("checked", false);
+       }
+    });
+});
+
+function dropdown(header) {
+    const content_div = $$(header).closest(".section").children(".content");
+    const button = $$(header).children(".dropdown_button");
+
+    if ($$(button).hasClass("fa-caret-down")) {
+        $$(button).removeClass("fa-caret-down").addClass("fa-caret-left");
+        content_div.slideUp('fast')
+    } else {
+        $$(button).removeClass("fa-caret-left").addClass("fa-caret-down");
+        content_div.slideDown('fast')
+    }
+}
+
+function click_task(task) {
+    $$(task).toggleClass("bg-primary text-white");
+    const input = $$(task).find("input");
+    input.prop("checked", !input.prop("checked"));
+}
+</script>
+
+<style>
+    .divided {
+      display: flex;
+      align-items: center;
+    }
+
+    .divider {
+      flex-grow: 1;
+      border-bottom: 1px solid lightgrey;
+      margin: 5px
+    }
+
+    .section_header.tab1 {
+        cursor: pointer;
+    }
+</style>
+
+$#
+$# Tab1: select tasks
+$#
+
+$def print_section_tab1(sections, level=3):
+    $for section in sections:
+        $if "sections_list" in section:
+            $:print_sections_list_tab1(section, level)
+        $else:
+            $if "tasks_list" in section:
+                $:print_tasks_list_tab1(section, level)
+
+$# print a non terminal section and the sections it contains
+$def print_sections_list_tab1(section, level):
+    <div id="section_$:_(section['id'])_tab1" class="section sections-list mb-4">
+        <div class="section_header tab1 d-flex justify-content-between divided pr-3" onclick="dropdown(this)"
+             title="$:_('To select a complete section go to the sections tab above')">
+            <div class="title h$level mr-3">
+                $:_(section["title"])
+            </div>
+            <span class="divider"></span>
+
+            <span style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-down close col-1">
+            </span>
+        </div>
+        <div class="content ml-4">
+            $:print_section_tab1(section["sections_list"], level +1)
+        </div>
+    </div>
+
+$# print a terminal section and the tasks it contains
+$def print_tasks_list_tab1(section, level):
+    $ id = section['id']
+    $# [Source code integration]: add class and id
+    <div id="section_$:_(id)_tab1" class="section tasks_list card mb-4">
+        $# [Source code integration]: add class and id, modify title move tag to title, add dropdown button
+        <div class="section_header tab1 card-header d-flex justify-content-between pr-3" onclick="dropdown(this)"
+             title="$:_('To select a complete section go to the sections tab above')">
+            <div class="title">
+                $:_(section["title"])
+            </div>
+
+            <button style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-down close col-1">
+            </button>
+        </div>
+        <div class="content list-group list-group-flush">
+            $for taskid in section["tasks_list"]:
+                $ task = tasks[taskid]
+                <div id="task_$:(taskid)" class="task list-group-item list-group-item-action" onclick="click_task(this)">
+                    <span class="task_name"> $task.get_name(user_manager.session_language()) </span>
+                    <input style="display: none" type="checkbox" name="task_$:(taskid)">
+                </div>
+        </div>
+    </div>
+
+$#
+$# Tab2: select sections
+$#
+
+$# Recursively print a list of sections and their content
+$def print_section_tab2(sections, level=3):
+    $for section in sections:
+        $if "sections_list" in section:
+            $:print_sections_list_tab2(section, level)
+        $else:
+            $if "tasks_list" in section:
+                $:print_tasks_list_tab2(section, level)
+
+$# print a non terminal section, the sections it contains and its description if it have some
+$def print_sections_list_tab2(section, level):
+    <div id="section_$:_(section['id'])_tab2" class="section sections-list mb-4">
+        <div class="section_header divided pr-0" onclick= "dropdown(this)">
+            <span class="title h$level mr-3">
+                <input type="checkbox" class="section-checkbox" name="section_$:_(section['id'])">
+                $:_(section["title"])
+            </span>
+            <span class="divider"></span>
+        </div>
+        <div class="ml-4">
+            $:print_section_tab2(section["sections_list"], level +1)
+        </div>
+    </div>
+
+$# print a terminal section and its description if it have some
+$def print_tasks_list_tab2(section, level):
+    $ id = section['id']
+    $# [Source code integration]: add class and id
+    <div id="section_$:_(id)_tab2" class="section tasks_list card mb-4">
+        $# [Source code integration]: add class and id, modify title move tag to title, add dropdown button
+        <div class="section_header card-header d-flex justify-content-between pr-0" onclick= "dropdown(this)">
+            <span class="title">
+                <input type="checkbox" class="section-checkbox" name="section_$:_(section['id'])">
+                $:_(section["title"])
+            </span>
+        </div>
+    </div>
+
+<form method="post">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between pb-0">
+            <ul class="nav nav-tabs card-header-tabs m-0" role="tablist">
+                <li role="presentation" class="nav-item">
+                    <a class=" active nav-link" href="#tasks_tab" role="tab" data-toggle="tab">
+                        <i class="fa fa-tasks fa-fw"></i> $:_("Tasks")</a>
+                </li>
+                <li role="presentation" class="nav-item">
+                    <a href="#sections_tab" class="nav-link" role="tab" data-toggle="tab">
+                        <i class="fa fa-align-left fa-fw"></i> $:_("Sections") </a>
+                </li>
+            </ul>
+            <div class="d-none d-lg-block">
+                <button class="btn btn-primary btn-block btn-sm" type="submit" >
+                        <i class="fa fa-download"></i> $:_("Export selected elements")
+                </button>
+            </div>
+        </div>
+        <div class="tab-content">
+            <div role="tabpanel" class="card-body tab-pane active" id="tasks_tab">
+                $:print_section_tab1(structure)
+            </div>
+            <div role="tabpanel" class="tab-pane card-body" id="sections_tab">
+                $if len(structure) == 1 and structure[0]["id"] == "tasks-list":
+                    <span> No sections available. </span>
+                $else:
+                    $:print_section_tab2(structure)
+            </div>
+        </div>
+    </div>
+    <div class="pt-3">
+        <button class="btn btn-primary btn-block" type="submit" >
+            <i class="fa fa-download"></i> $:_("Export selected elements")
+        </button>
+    </div>
+</form>

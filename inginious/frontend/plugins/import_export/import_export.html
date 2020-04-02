@@ -1,0 +1,25 @@
+$def with (course, structure, tasks, errors, validated)
+
+$#
+$# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
+$# more information about the licensing of this file.
+$#
+
+
+$var title: $:course.get_name(user_manager.session_language()) - $:_("Import/Export")
+$var Column: $:template_helper.call('course_admin_menu',course=course,current='import_export')
+
+$def NavbarF():
+    <nav aria-label="breadcrumb" xmlns="http://www.w3.org/1999/html">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.course_page/$course.get_id()">$course.get_name(user_manager.session_language())</a></li>
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.admin_page/$course.get_id()" title=$:_('"Administration"') data-toggle="tooltip" data-placement="bottom">
+                <i class="fa fa-user-secret"></i></a></li>
+            <li class="breadcrumb-item active"><a href="#"> <i class="fa fa-upload"></i> $:_("Import/Export") <span class="sr-only">$:_("(current)")</span></a></li>
+
+        </ol>
+    </nav>
+$var Navbar: $:NavbarF()
+
+<h2>Export</h2>
+$:template_helper.get_custom_renderer('frontend/plugins/import_export', layout=False).export_tasks(course, structure, tasks, errors, validated)
