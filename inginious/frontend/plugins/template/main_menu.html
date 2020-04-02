@@ -1,0 +1,6 @@
+$def with ()
+<!-- Change for professor right when created -->
+$if user_manager.user_is_superadmin():
+    <div class="list-group mt-3 mb-3">
+        <a class="list-group-item list-group-item-action list-group-item-info" href="$get_homepath()/template"><i class="fa fa-file"></i> $_("Templates")</a>
+    </div>
