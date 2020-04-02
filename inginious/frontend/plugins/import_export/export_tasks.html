@@ -1,13 +1,18 @@
-$def with (course, structure, tasks)
+$def with (course, template, structure, tasks)
 
 $#
 $# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
 $# more information about the licensing of this file.
 $#
 
+$ import_export = _("Import") if template else _("Export")
+
 <script>
 $$(function () {
-    $$(".section-checkbox").change(function(){
+    $if template:
+        $$(".content.tab2").hide();
+    $$(".section-checkbox").on('click', function (evt) {
+        evt.stopPropagation();
         tab1_id = $$(this).closest(".section").attr("id").slice(0, -1) + "1";
        if($$(this).is(":checked")){
            $$(this).closest(".section").find(".section-checkbox").prop("checked", true);
@@ -50,10 +55,14 @@ function click_task(task) {
       border-bottom: 1px solid lightgrey;
       margin: 5px
     }
-
-    .section_header.tab1 {
-        cursor: pointer;
-    }
+    $if template:
+        .section_header {
+            cursor: pointer;
+        }
+    $else:
+        .section_header.tab1 {
+            cursor: pointer;
+        }
 </style>
 
 $#
@@ -78,7 +87,7 @@ $def print_sections_list_tab1(section, level):
             </div>
             <span class="divider"></span>
 
-            <span style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-down close col-1">
+            <span style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-down close pl-3">
             </span>
         </div>
         <div class="content ml-4">
@@ -98,7 +107,7 @@ $def print_tasks_list_tab1(section, level):
                 $:_(section["title"])
             </div>
 
-            <button style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-down close col-1">
+            <button style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-down close">
             </button>
         </div>
         <div class="content list-group list-group-flush">
@@ -127,13 +136,30 @@ $def print_section_tab2(sections, level=3):
 $# print a non terminal section, the sections it contains and its description if it have some
 $def print_sections_list_tab2(section, level):
     <div id="section_$:_(section['id'])_tab2" class="section sections-list mb-4">
-        <div class="section_header divided pr-0" onclick= "dropdown(this)">
+        <div class="section_header d-flex justify-content-between divided pr-3" onclick= "$('dropdown(this)' if template else '')">
             <span class="title h$level mr-3">
                 <input type="checkbox" class="section-checkbox" name="section_$:_(section['id'])">
                 $:_(section["title"])
             </span>
             <span class="divider"></span>
+
+            $if template:
+                <span style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-left close pl-3">
+                </span>
         </div>
+        $if template:
+            <div class="content tab2 ml-4">
+                <h6> $:_("Description:")</h6>
+                <div class="ml-4">
+                    $:template.get_section_description(user_manager.session_language(), id)
+                </div>
+                $if template.get_section_skills(user_manager.session_language(), id):
+                    <h6> $:_("Skills:")</h6>
+                    <ul class="ml-4">
+                        $for skill in template.get_section_skills(user_manager.session_language(), id)
+                            <li>$skill</li>
+                    </ul>
+            </div>
         <div class="ml-4">
             $:print_section_tab2(section["sections_list"], level +1)
         </div>
@@ -145,12 +171,28 @@ $def print_tasks_list_tab2(section, level):
     $# [Source code integration]: add class and id
     <div id="section_$:_(id)_tab2" class="section tasks_list card mb-4">
         $# [Source code integration]: add class and id, modify title move tag to title, add dropdown button
-        <div class="section_header card-header d-flex justify-content-between pr-0" onclick= "dropdown(this)">
+        <div class="section_header card-header d-flex justify-content-between pr-3" onclick= "$('dropdown(this)' if template else '')">
             <span class="title">
                 <input type="checkbox" class="section-checkbox" name="section_$:_(section['id'])">
                 $:_(section["title"])
             </span>
+            $if template:
+                <span style="font-size: 1.5rem;" class="dropdown_button fa fa-caret-left close">
+                </span>
         </div>
+        $if template:
+            <div class="content tab2 list-group list-group-flush p-3">
+                <h6> $:_("Description:")</h6>
+                <div class="ml-4">
+                    $:template.get_section_description(user_manager.session_language(), id)
+                </div>
+                $if template.get_section_skills(user_manager.session_language(), id):
+                    <h6> $:_("Skills:")</h6>
+                    <ul class="ml-4">
+                        $for skill in template.get_section_skills(user_manager.session_language(), id)
+                            <li>$skill</li>
+                    </ul>
+            </div>
     </div>
 
 <form method="post">
@@ -169,7 +211,7 @@ $def print_tasks_list_tab2(section, level):
             </ul>
             <div class="d-none d-lg-block">
                 <button class="btn btn-primary btn-block btn-sm" type="submit" >
-                        <i class="fa fa-download"></i> $:_("Export selected elements")
+                        <i class="fa fa-download"></i> $:import_export  $:_("selected elements")
                 </button>
             </div>
         </div>
@@ -187,7 +229,7 @@ $def print_tasks_list_tab2(section, level):
     </div>
     <div class="pt-3">
         <button class="btn btn-primary btn-block" type="submit" >
-            <i class="fa fa-download"></i> $:_("Export selected elements")
+            <i class="fa fa-download"></i> $:import_export  $:_("selected elements")
         </button>
     </div>
 </form>

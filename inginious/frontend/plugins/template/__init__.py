@@ -23,9 +23,19 @@ from inginious.frontend.plugins.template.pages.template_admin.utils import Cours
 
 from inginious.frontend.plugins.template.pages.course_admin.templates import CourseAdminTemplates
 
+from inginious.frontend.plugins.template.pages.course_admin.import_template_tasks import ImportTemplateTasks
+
 
 def main_menu(template_helper):
     return str(template_helper.get_custom_renderer('frontend/plugins/template', layout=False).main_menu())
+
+
+# [Source code integration]: move as part of the import_tasks extension
+def import_tasks(template_helper, plugin_manager, user_manager, course):
+    template_factory = plugin_manager.call_hook("template_factory")[0]
+    template_filter = lambda elem: not elem[1].is_private() or user_manager.has_staff_rights_on_course(elem[1])
+    templates = dict(filter(template_filter, template_factory.get_all_courses().items()))
+    return _("Import from templates"), str(template_helper.get_custom_renderer('frontend/plugins/template', layout=False).import_tasks(templates, course))
 
 
 def course_admin_menu(course):
@@ -64,3 +74,7 @@ def init(plugin_manager, course_factory, _, plugin_config):
 
     plugin_manager.add_hook("course_admin_menu", course_admin_menu)
     plugin_manager.add_page('/admin/([^/]+)/templates', CourseAdminTemplates)
+
+    # [Source code integration]: move as part of the import_tasks extension
+    plugin_manager.add_hook("import_tasks", import_tasks)
+    plugin_manager.add_page('/admin/([^/]+)/import_tasks/template/([^/]+)', ImportTemplateTasks)

@@ -1,12 +1,11 @@
-$def with (course, structure, tasks, errors, validation_message)
+$def with (course, template, structure, tasks, errors, validated)
 
 $#
 $# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
 $# more information about the licensing of this file.
 $#
 
-
-$var title: $:course.get_name(user_manager.session_language()) - $:_("Import/Export")
+$var title: $:course.get_name(user_manager.session_language()) - _("Import From Templates")
 $var Column: $:template_helper.call('course_admin_menu',course=course,current='import_export')
 
 $def NavbarF():
@@ -15,18 +14,13 @@ $def NavbarF():
             <li class="breadcrumb-item"><a href="$get_homepath()/$course.course_page/$course.get_id()">$course.get_name(user_manager.session_language())</a></li>
             <li class="breadcrumb-item"><a href="$get_homepath()/$course.admin_page/$course.get_id()" title=$:_('"Administration"') data-toggle="tooltip" data-placement="bottom">
                 <i class="fa fa-user-secret"></i></a></li>
-            <li class="breadcrumb-item active"><a href="#"> <i class="fa fa-upload"></i> $:_("Import/Export") <span class="sr-only">$:_("(current)")</span></a></li>
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.admin_page/$course.get_id()/import_tasks" title=$:_('"Import tasks"') data-toggle="tooltip" data-placement="bottom">
+                    <i class="fa fa-download"></i></a></li>
+                <li class="breadcrumb-item active"><a href="#"> $:_("Import task from template") <span class="sr-only">$:_("(current)")</span></a></li>
 
         </ol>
     </nav>
 $var Navbar: $:NavbarF()
-
-<style>
-    .hook_div{
-        max-height: 36rem;
-        overflow-y: auto;
-    }
-</style>
 
 $if errors:
     $for error in errors:
@@ -34,24 +28,12 @@ $if errors:
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
             $error
         </div>
-$elif validation_message:
+$elif validated:
     <div class="alert alert-success" role="alert">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        $validation_message
+        $:_("Import successful.")
     </div>
 
-<h2>$:_("Import to this course")</h2>
-<div class="ml-4">
-    $:template_helper.get_custom_renderer('frontend/plugins/import_export', layout=False).import_tasks(course)
-</div>
+<h2>$:_(template.get_name(user_manager.session_language()))</h2>
 
-$for name, content in plugin_manager.call_hook('import_tasks', template_helper=template_helper, plugin_manager=plugin_manager, user_manager=user_manager, course=course):
-    <h2>$name</h2>
-    <div class="hook_div mb-3 ml-4">
-        $:content
-    </div>
-
-<h2>$:_("Export from this course")</h2>
-<div class="ml-4">
-    $:template_helper.get_custom_renderer('frontend/plugins/import_export', layout=False).export_tasks(course, None, structure, tasks)
-</div>
+$:template_helper.get_custom_renderer('frontend/plugins/import_export', layout=False).export_tasks(course, template, structure, tasks)
