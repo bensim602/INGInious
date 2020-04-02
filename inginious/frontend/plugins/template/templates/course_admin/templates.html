@@ -1,4 +1,4 @@
-$def with (course, error)
+$def with (course, template_source, error)
 
 $#
 $# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
@@ -21,6 +21,20 @@ $def NavbarF():
         </ol>
     </nav>
 $var Navbar: $:NavbarF()
+
+$if template_source:
+    <h2>$:_("Template source")</h2>
+        <div class="card m-2">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="$get_homepath()/template/$template_source.get_id()">$template_source.get_name(user_manager.session_language())</a>
+                </h5>
+                <span class="card-text m-0 wrap-h6">
+                    $template_source.get_template_short_descriptor(user_manager.session_language())
+                </span>
+            </div>
+        </div>
+
 
 <h2>$:_("Export this course as template")</h2>
 $if error:

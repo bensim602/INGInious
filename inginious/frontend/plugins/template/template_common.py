@@ -63,6 +63,7 @@ def export(source_factory, destination_factory, source_id, destination_id, user,
             descriptor["editors"] = [user]
         else:
             descriptor["admins"] = [user]
+            descriptor["source"] = source_id
 
         # create the course
         destination_factory.create_course(destination_id, descriptor)

@@ -2,8 +2,11 @@
 #
 # This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
 # more information about the licensing of this file.
+import web
+
 from inginious.frontend.tasks import WebAppTask
 from inginious.common.filesystems.local import LocalFSProvider
+from inginious.frontend.pages.utils import INGIniousAuthPage
 
 from inginious.frontend.plugins.template.template_common import Template
 from inginious.frontend.plugins.template.template_factory import create_factories
@@ -59,4 +62,3 @@ def init(plugin_manager, course_factory, _, plugin_config):
 
     plugin_manager.add_hook("course_admin_menu", course_admin_menu)
     plugin_manager.add_page('/admin/([^/]+)/templates', CourseAdminTemplates)
-

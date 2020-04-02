@@ -41,5 +41,7 @@ class CourseAdminTemplates(INGIniousAdminPage):
 
     def page(self, course, error=False):
         """ Get all data and display the page """
+        template_source_id = course.get_descriptor().get("source", None)
+        template_source = self.template_factory.get_course(template_source_id)
         return self.template_helper.get_custom_renderer(
-            'frontend/plugins/template/templates').course_admin.templates(course, error)
+            'frontend/plugins/template/templates').course_admin.templates(course, template_source, error)
