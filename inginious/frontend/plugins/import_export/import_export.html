@@ -21,6 +21,13 @@ $def NavbarF():
     </nav>
 $var Navbar: $:NavbarF()
 
+<style>
+    .hook_div{
+        height: 36rem;
+        overflow-y: auto;
+    }
+</style>
+
 $if errors:
     $for error in errors:
         <div class="alert alert-danger" role="alert">
@@ -37,6 +44,12 @@ $elif validation_message:
 <div class="ml-4">
     $:template_helper.get_custom_renderer('frontend/plugins/import_export', layout=False).import_tasks(course)
 </div>
+
+$for name, content in plugin_manager.call_hook('import_tasks', template_helper=template_helper, plugin_manager=plugin_manager, user_manager=user_manager, course=course):
+    <h2>$name</h2>
+    <div class="hook_div mb-3 ml-4">
+        $:content
+    </div>
 
 <h2>$:_("Export from this course")</h2>
 <div class="ml-4">

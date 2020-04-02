@@ -55,3 +55,9 @@ $var Navbar: $:NavbarF()
     </div>
     <button name="import_inginious_file" type="submit" class="btn btn-default btn-lg btn-block center-block mb-5" id="tasks-import">$:_("Import")</button>
 </form>
+
+$for name, content in plugin_manager.call_hook('import_tasks', template_helper=template_helper, plugin_manager=plugin_manager, user_manager=user_manager, course=course):
+    <h3>$name</h3>
+    <div class="hook_div">
+        $:content
+    </div>
