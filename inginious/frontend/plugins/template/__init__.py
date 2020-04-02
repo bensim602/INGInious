@@ -35,9 +35,11 @@ def course_admin_menu(course):
 def init(plugin_manager, course_factory, _, plugin_config):
     """ Init the plugin """
     template_filesystem = LocalFSProvider(plugin_config["template_directory"])
+    template_repo = plugin_config.get("template_repo", "https://github.com/bensim602/INGInious-templates.git")
 
     template_factory, template_task_factory = create_factories(template_filesystem,
                                                                course_factory.get_task_factory().get_problem_types(),
+                                                               template_repo,
                                                                plugin_manager,
                                                                WebAppTemplate,
                                                                WebAppTask)

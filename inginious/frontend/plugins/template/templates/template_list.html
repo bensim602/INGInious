@@ -39,6 +39,12 @@ $def ColumnF():
         </a>
     </div>
 
+    $if user_manager.user_is_superadmin():
+        <form class="list-group" method="post">
+            <input type="hidden" name="pull">
+            <button class="btn btn-primary btn-block mt-3 task_edit_submit_button" type="submit"><i class="fa fa-refresh"></i> $_("Pull templates")</button>
+        </form>
+
 $var Column: $:ColumnF()
 
 $# Start content

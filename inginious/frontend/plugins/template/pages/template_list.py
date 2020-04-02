@@ -44,6 +44,12 @@ class TemplateList(INGIniousAuthPage):
                 message, success = _("Template created."), True
             except:
                 message, success = _("Failed to create the course."), False
+        elif "pull" in user_input and self.user_manager.user_is_superadmin():
+            try:
+                self.template_factory.pull_git_templates()
+                message, success = _("Templates pulled."), True
+            except:
+                message, success = _("Failed to pull the course."), False
         else:
             return self.page()
 

@@ -6,17 +6,36 @@
 # [Source code integration]: move to inginious.common
 
 """ Factory for loading templates from disk """
+import os
+import sys
+
 from inginious.common.base import loads_json_or_yaml, get_json_or_yaml, id_checker
 from inginious.common.course_factory import CourseFactory
 from inginious.common.exceptions import CourseAlreadyExistsException, InvalidNameException, CourseNotFoundException, \
     CourseUnreadableException
+from inginious.common.filesystems.provider import FileSystemProvider
 from inginious.common.hook_manager import HookManager
+from inginious.common.log import get_course_logger
 from inginious.common.task_factory import TaskFactory
 from inginious.common.tasks import Task
 from inginious.frontend.plugins.template.template_common import Template
 
+if sys.platform == 'win32':
+    import pbs
+    git = pbs.Command('git')
+else:
+    from sh import git  # pylint: disable=no-name-in-module
+
 
 class TemplateFactory(CourseFactory):
+    def __init__(self, filesystem: FileSystemProvider, task_factory, template_repo, hook_manager, course_class=Template):
+        super().__init__(filesystem, task_factory, hook_manager, course_class)
+
+        git_list_path = os.path.join(self._filesystem.prefix, "gitTemplateList")
+        ensure_git_exist(template_repo, git_list_path)
+        self._git = {"gitTemplateList": git.bake('--work-tree=' + git_list_path, '--git-dir=' + os.path.join(git_list_path, '.git'))}
+
+        self.pull_git_templates()
 
     def get_template_descriptor_content(self, templateid):
         """
@@ -36,6 +55,21 @@ class TemplateFactory(CourseFactory):
         """
         path = self._get_template_descriptor_path(templateid)
         self._filesystem.put(path, get_json_or_yaml(path, content))
+
+    def get_all_courses(self):
+        """
+        :return: a table containing courseid=>Course pairs, filter gitTemplateList
+        """
+        course_ids = [f[0:len(f) - 1] for f in self._filesystem.list(folders=True, files=False, recursive=False)]  # remove trailing "/"
+
+        output = {}
+        for courseid in course_ids:
+            if not courseid == "gitTemplateList":
+                try:
+                    output[courseid] = self.get_course(courseid)
+                except Exception:
+                    get_course_logger(courseid).warning("Cannot open course", exc_info=True)
+        return output
 
     def _get_template_descriptor_path(self, courseid):
         """
@@ -131,12 +165,39 @@ class TemplateFactory(CourseFactory):
 
         self._task_factory.update_cache_for_course(courseid)
 
+    def _get_git_template_list(self):
+        """
+        :return: the list of template linked to git
+        """
+        path = "gitTemplateList/list.yaml"
+        return loads_json_or_yaml(path, self._filesystem.get(path).decode("utf-8"))
 
-def create_factories(fs_provider, task_problem_types, hook_manager=None, course_class=Template, task_class=Task):
+    def pull_git_templates(self):
+        self._git["gitTemplateList"].pull()
+
+        for template_prefix, repo in self._get_git_template_list().items():
+            templateid = template_prefix + "_g1t"
+            if templateid not in self._git:
+                self._git[templateid] = git.bake('--work-tree=' + os.path.join(self._filesystem.prefix, templateid),
+                                                '--git-dir=' + os.path.join(self._filesystem.prefix, templateid, '.git'))
+
+            path = os.path.join(self._filesystem.prefix, templateid)
+            ensure_git_exist(repo, path)
+            self._git[templateid].pull()
+
+
+def ensure_git_exist(repo, path):
+    """ Clone the repository if not done already """
+    if not os.path.exists(path):
+        git.clone(repo, path)
+
+
+def create_factories(fs_provider, task_problem_types, template_repo, hook_manager=None, course_class=Template, task_class=Task):
     """
     [Source code integration]: make function genral for course and template
     Shorthand for creating Factories
     :param fs_provider: A FileSystemProvider leading to the courses
+    :param template_repo: the repository containing the list of git templates
     :param hook_manager: an Hook Manager instance. If None, a new Hook Manager is created
     :param course_class:
     :param task_class:
@@ -146,4 +207,4 @@ def create_factories(fs_provider, task_problem_types, hook_manager=None, course_
         hook_manager = HookManager()
 
     task_factory = TaskFactory(fs_provider, hook_manager, task_problem_types, task_class)
-    return TemplateFactory(fs_provider, task_factory, hook_manager, course_class), task_factory
+    return TemplateFactory(fs_provider, task_factory, template_repo, hook_manager, course_class), task_factory
