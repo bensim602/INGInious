@@ -1,4 +1,4 @@
-$def with (course, structure, tasks, errors, validated)
+$def with (course, structure, tasks, errors, validation_message)
 
 $#
 $# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
@@ -21,5 +21,24 @@ $def NavbarF():
     </nav>
 $var Navbar: $:NavbarF()
 
-<h2>Export</h2>
-$:template_helper.get_custom_renderer('frontend/plugins/import_export', layout=False).export_tasks(course, structure, tasks, errors, validated)
+$if errors:
+    $for error in errors:
+        <div class="alert alert-danger" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            $error
+        </div>
+$elif validation_message:
+    <div class="alert alert-success" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        $validation_message
+    </div>
+
+<h2>$:_("Import to this course")</h2>
+<div class="ml-4">
+    $:template_helper.get_custom_renderer('frontend/plugins/import_export', layout=False).import_tasks(course)
+</div>
+
+<h2>$:_("Export from this course")</h2>
+<div class="ml-4">
+    $:template_helper.get_custom_renderer('frontend/plugins/import_export', layout=False).export_tasks(course, structure, tasks)
+</div>

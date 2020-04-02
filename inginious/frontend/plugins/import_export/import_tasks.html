@@ -1,0 +1,18 @@
+$def with (course)
+
+<form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="import">
+    <div class="problem card card-default mt-4 mb-4">
+        <div class="card-heading">
+            <h5 class="card-header">
+                $:_("Import tasks and sections")
+            </h5>
+        </div>
+        <div class="card-body">
+            <p>$:_("Upload the tasks archive here.")</p>
+            <input type="file" name="archive_file"> <br/>
+            $:_("Allowed extensions"): .tgz
+        </div>
+    </div>
+    <button name="import_inginious_file" type="submit" class="btn btn-default btn-lg btn-block center-block mb-5" id="tasks-import">$:_("Import")</button>
+</form> 

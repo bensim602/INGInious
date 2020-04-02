@@ -1,21 +1,9 @@
-$def with (course, structure, tasks, errors, validated)
+$def with (course, structure, tasks)
 
 $#
 $# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
 $# more information about the licensing of this file.
 $#
-
-$if errors:
-    $for error in errors:
-        <div class="alert alert-danger" role="alert">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            $error
-        </div>
-$elif validated:
-    <div class="alert alert-success" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        $:_("Export successful.")
-    </div>
 
 <script>
 $$(function () {
@@ -166,6 +154,7 @@ $def print_tasks_list_tab2(section, level):
     </div>
 
 <form method="post">
+    <input type="hidden" name="export">
     <div class="card">
         <div class="card-header d-flex justify-content-between pb-0">
             <ul class="nav nav-tabs card-header-tabs m-0" role="tablist">

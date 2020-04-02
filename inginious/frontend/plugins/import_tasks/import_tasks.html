@@ -1,0 +1,57 @@
+$def with (course, errors,validated)
+
+$#
+$# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
+$# more information about the licensing of this file.
+$#
+
+$var title: $:course.get_name(user_manager.session_language()) - $:_("Import Tasks")
+$var Column: $:template_helper.call('course_admin_menu',course=course,current='import_tasks')
+
+$def NavbarF():
+    <nav aria-label="breadcrumb" xmlns="http://www.w3.org/1999/html">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.course_page/$course.get_id()">$course.get_name(user_manager.session_language())</a></li>
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.admin_page/$course.get_id()" title=$:_('"Import Tasks"') data-toggle="tooltip" data-placement="bottom">
+                <i class="fa fa-user-secret"></i></a></li>
+            <li class="breadcrumb-item active"><a href="#"><i class="fa fa-upload"></i> $:_("Export tasks") <span class="sr-only">$:_("(current)")</span></a></li>
+        </ol>
+    </nav>
+$var Navbar: $:NavbarF()
+
+<style>
+    .hook_div{
+        height: 36rem;
+        overflow-y: auto;
+    }
+</style>
+
+<h2>$:_("Import tasks to this course")</h2>
+
+<form method="post" enctype="multipart/form-data">
+    <div class="problem card card-default mt-4 mb-4">
+        <div class="card-heading">
+            <h5 class="card-header">
+                $:_("Import tasks and sections")
+            </h5>
+        </div>
+        <div class="card-body">
+            $if errors:
+                $for error in errors:
+                    <div class="alert alert-danger" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                        $error
+                    </div>
+            $elif validated:
+                <div class="alert alert-success" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    $:_("Import successful.")
+                </div>
+
+            <p>$:_("Upload the tasks archive here.")</p>
+            <input type="file" name="archive_file"> <br/>
+            $:_("Allowed extensions"): .tgz
+        </div>
+    </div>
+    <button name="import_inginious_file" type="submit" class="btn btn-default btn-lg btn-block center-block mb-5" id="tasks-import">$:_("Import")</button>
+</form>

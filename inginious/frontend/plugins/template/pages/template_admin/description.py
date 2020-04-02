@@ -35,10 +35,10 @@ class TemplateDescription(INGIniousTemplateAdminPage):
                 template_content["skills"] = []
 
             try:
-                from inginious.frontend.plugins.course_structure.webapp_course import get_ids
+                from inginious.frontend.plugins.course_structure.webapp_course import get_ids_and_make_unique
                 new_structure_description = {}
                 new_structure_skills = {}
-                for section_id in get_ids(template):
+                for section_id in get_ids_and_make_unique(template):
                     if "description_section_" + section_id in data:
                         new_structure_description[section_id] = data["description_section_" + section_id]
                     else:
