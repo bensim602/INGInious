@@ -65,6 +65,10 @@ class WebAppCourse(Course):
             self._lti_url = ''
             self._lti_send_back_grade = False
 
+        self.course_page = "course"
+        self.admin_page = "admin"
+        self.has_student = True
+
     def get_staff(self):
         """ Returns a list containing the usernames of all the staff users """
         return list(set(self.get_tutors() + self.get_admins()))
@@ -166,3 +170,31 @@ class WebAppCourse(Course):
 
     def get_tags(self):
         return self._tags
+
+    def get_admin_menu(self, plugin_manager, user_manager):
+        """ Return the element to display in the admin menu of the course """
+        default_entries = []
+        if user_manager.has_admin_rights_on_course(self):
+            default_entries += [("settings", "<i class='fa fa-cog fa-fw'></i>&nbsp; " + _("Course settings"))]
+
+        default_entries += [("stats", "<i class='fa fa-area-chart fa-fw'></i>&nbsp; " + _("Stats")),
+                            ("students", "<i class='fa fa-user fa-fw'></i>&nbsp; " + _("Students")),
+                            ("audiences", "<i class='fa fa-group fa-fw'></i>&nbsp; " + _("Audiences"))]
+
+        if not self.is_lti():
+            default_entries += [("groups", "<i class='fa fa-group fa-fw'></i>&nbsp; " + _("Groups"))]
+
+        default_entries += [("tasks", "<i class='fa fa-tasks fa-fw'></i>&nbsp; " + _("Tasks")),
+                            ("tags", "<i class='fa fa-tags fa-fw'></i>&nbsp;" + _("Tags")),
+                            ("submissions", "<i class='fa fa-search fa-fw'></i>&nbsp; " + _("View submissions")),
+                            ("download", "<i class='fa fa-download fa-fw'></i>&nbsp; " + _("Download submissions"))]
+
+        if user_manager.has_admin_rights_on_course(self):
+            default_entries += [("replay", "<i class='fa fa-refresh fa-fw'></i>&nbsp; " + _("Replay submissions")),
+                                ("danger", "<i class='fa fa-bomb fa-fw'></i>&nbsp; " + _("Danger zone"))]
+
+        # Hook should return a tuple (link,name) where link is the relative link from the index of the course administration.
+        additional_entries = [entry for entry in plugin_manager.call_hook('course_admin_menu', course=self) if
+                              entry is not None]
+
+        return default_entries + additional_entries

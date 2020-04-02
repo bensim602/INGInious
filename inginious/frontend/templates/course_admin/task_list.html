@@ -13,8 +13,8 @@ $ is_admin = user_manager.has_admin_rights_on_course(course)
 $def NavbarF():
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="$get_homepath()/course/$course.get_id()">$course.get_name(user_manager.session_language())</a></li>
-            <li class="breadcrumb-item"><a href="$get_homepath()/admin/$course.get_id()" title=$:_('"Administration"') data-toggle="tooltip" data-placement="bottom">
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.course_page/$course.get_id()">$course.get_name(user_manager.session_language())</a></li>
+            <li class="breadcrumb-item"><a href="$get_homepath()/$course.admin_page/$course.get_id()" title=$:_('"Administration"') data-toggle="tooltip" data-placement="bottom">
                 <i class="fa fa-user-secret"></i></a></li>
             <li class="breadcrumb-item active"><a href="#"><i class="fa fa-tasks"></i> $:_("Tasks") <span class="sr-only">$:_("(current)")</span></a></li>
         </ol>
@@ -62,12 +62,13 @@ $if webdav_host:
             <th>$:_("# student succeeded")</th>
             <th>$:_("# attempts")</th>
             <th>
-                <div class="btn-group btn-group-sm" role="group">
-                    <a href="$get_homepath()/admin/${course.get_id()}/download?format=taskid%2Fusername" class="btn btn-danger"
-                       title=$:_('"Download all submissions"') data-toggle="tooltip" data-placement="bottom"><i class="fa fa-download"></i></a>
-                    <a href="$get_homepath()/admin/${course.get_id()}/tasks?csv" class="btn btn-info"
-                       title=$:_('"Download CSV"') data-toggle="tooltip" data-placement="bottom"><i class="fa fa-table"></i></a>
-                </div>
+                $if course.has_student:
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a href="$get_homepath()/$course.admin_page/${course.get_id()}/download?format=taskid%2Fusername" class="btn btn-danger"
+                           title=$:_('"Download all submissions"') data-toggle="tooltip" data-placement="bottom"><i class="fa fa-download"></i></a>
+                        <a href="$get_homepath()/$course.admin_page/${course.get_id()}/tasks?csv" class="btn btn-info"
+                           title=$:_('"Download CSV"') data-toggle="tooltip" data-placement="bottom"><i class="fa fa-table"></i></a>
+                    </div>
             </th>
         </tr>
     </thead>
@@ -85,15 +86,16 @@ $if webdav_host:
     		<td style="min-width:120px">
                 <div class="btn-group btn-group-sm" role="group">
                     $if is_admin:
-                        <a href="$get_homepath()/admin/${course.get_id()}/edit/task/$taskid" class="btn btn-primary" title=$:_('"Edit task"') data-toggle="tooltip"
+                        <a href="$get_homepath()/$course.admin_page/${course.get_id()}/edit/task/$taskid" class="btn btn-primary" title=$:_('"Edit task"') data-toggle="tooltip"
                            data-placement="bottom"><i class="fa fa-edit"></i></a>
-                    <a href="$get_homepath()/admin/${course.get_id()}/submissions$data[taskid]['url']" class="btn btn-secondary" title=$:_('"View results"') data-toggle="tooltip"
-                       data-placement="bottom"><i class="fa fa-users"></i></a>
-                    <a href="$get_homepath()/admin/${course.get_id()}/download$data[taskid]['url']" class="btn btn-secondary" title=$:_('"Download submissions"')
-                       data-toggle="tooltip" data-placement="bottom"><i class="fa fa-download"></i></a>
-                    $if is_admin:
-                        <a href="$get_homepath()/admin/${course.get_id()}/replay$data[taskid]['url']" class="btn btn-secondary" title=$:_('"Replay submissions"')
-                           data-toggle="tooltip" data-placement="bottom"><i class="fa fa-refresh"></i></a>
+                    $if course.has_student:
+                        <a href="$get_homepath()/$course.admin_page/${course.get_id()}/submissions$data[taskid]['url']" class="btn btn-secondary" title=$:_('"View results"') data-toggle="tooltip"
+                           data-placement="bottom"><i class="fa fa-users"></i></a>
+                        <a href="$get_homepath()/$course.admin_page/${course.get_id()}/download$data[taskid]['url']" class="btn btn-secondary" title=$:_('"Download submissions"')
+                           data-toggle="tooltip" data-placement="bottom"><i class="fa fa-download"></i></a>
+                        $if is_admin:
+                            <a href="$get_homepath()/$course.admin_page/${course.get_id()}/replay$data[taskid]['url']" class="btn btn-secondary" title=$:_('"Replay submissions"')
+                               data-toggle="tooltip" data-placement="bottom"><i class="fa fa-refresh"></i></a>
                 </div>
     		</td>
     	</tr>

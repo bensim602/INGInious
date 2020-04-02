@@ -311,30 +311,9 @@ def make_csv(data):
 
 def get_menu(course, current, renderer, plugin_manager, user_manager):
     """ Returns the HTML of the menu used in the administration. ```current``` is the current page of section """
-    default_entries = []
-    if user_manager.has_admin_rights_on_course(course):
-        default_entries += [("settings", "<i class='fa fa-cog fa-fw'></i>&nbsp; " + _("Course settings"))]
+    entries = course.get_admin_menu(plugin_manager, user_manager)
 
-    default_entries += [("stats", "<i class='fa fa-area-chart fa-fw'></i>&nbsp; " + _("Stats")),
-                        ("students", "<i class='fa fa-user fa-fw'></i>&nbsp; " + _("Students")),
-                        ("audiences", "<i class='fa fa-group fa-fw'></i>&nbsp; " + _("Audiences"))]
-
-    if not course.is_lti():
-        default_entries += [("groups", "<i class='fa fa-group fa-fw'></i>&nbsp; " +_("Groups"))]
-
-    default_entries += [("tasks", "<i class='fa fa-tasks fa-fw'></i>&nbsp; " + _("Tasks")),
-                        ("tags", "<i class='fa fa-tags fa-fw'></i>&nbsp;" + _("Tags")),
-                        ("submissions", "<i class='fa fa-search fa-fw'></i>&nbsp; " + _("View submissions")),
-                        ("download", "<i class='fa fa-download fa-fw'></i>&nbsp; " + _("Download submissions"))]
-
-    if user_manager.has_admin_rights_on_course(course):
-        default_entries += [("replay", "<i class='fa fa-refresh fa-fw'></i>&nbsp; " + _("Replay submissions")),
-                            ("danger", "<i class='fa fa-bomb fa-fw'></i>&nbsp; " + _("Danger zone"))]
-
-    # Hook should return a tuple (link,name) where link is the relative link from the index of the course administration.
-    additional_entries = [entry for entry in plugin_manager.call_hook('course_admin_menu', course=course) if entry is not None]
-
-    return renderer.course_admin.menu(course, default_entries + additional_entries, current)
+    return renderer.course_admin.menu(course, entries, current)
 
 
 class CourseRedirect(INGIniousAdminPage):
