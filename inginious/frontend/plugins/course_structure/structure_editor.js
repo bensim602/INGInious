@@ -12,6 +12,7 @@ var draggable_sections = {};
 var draggable_tasks = {};
 var task_renamed = {};
 var timeouts = [],  lastenter;
+var warn_before_exit = false;
 
 /*****************************
  *     Renaming Elements     *
@@ -49,6 +50,7 @@ function rename(element, endswith) {
         input.remove();
         handle.addClass("handle");
         endswith(element, input.val());
+        warn_before_exit = true;
     };
 
     input.focusout(quit);
@@ -66,6 +68,7 @@ function create_section(parent) {
     const level = Number(parent.attr("data-level"));
 
     const section = $("#empty_section").clone().show().appendTo(parent.children(".content"));
+    warn_before_exit = true;
     section.attr("data-level", level + 1);
 
     content_modified(parent);
@@ -121,6 +124,7 @@ function add_tasks_to_section(button) {
     const content = section.children(".content");
 
     for (var i = 0; i < selected_tasks.length; i++) {
+        warn_before_exit = true;
         content.append($("#task_" + selected_tasks[i] + "_clone").clone().attr("id", 'task_' + selected_tasks[i]));
     }
 
@@ -134,6 +138,7 @@ function delete_section(button) {
     const section = $("#" + button.getAttribute('data-target'));
     const parent = section.parent().closest(".sections_list");
     section.remove();
+    warn_before_exit = true;
     content_modified(parent);
 }
 
@@ -142,6 +147,7 @@ function delete_task(button) {
 
     const parent = button.closest(".tasks_list");
     button.closest(".task").remove();
+    warn_before_exit = true;
     content_modified(parent);
 }
 
@@ -188,7 +194,7 @@ function section_to_empty(section) {
     const header = section.children(".section_header").removeClass("divided").addClass("card-header");
     header.children(".title").attr("class", "title");
     header.children(".divider").hide();
-    
+
     const text_placeholder = $("#empty_section").find(".section_placeholder").html().trim();
     const para = $("<p>").attr("class", "section_placeholder text-center align-middle m-2").html(text_placeholder);
     section.children(".content").removeClass("ml-4").addClass("list-group list-group-flush").append(para);
@@ -269,6 +275,7 @@ function make_tasks_list_sortable(element) {
         onEnd: function (evt) {
             $('.tasks_list').children('.content').slideDown('fast');
             $('.tasks_list').children('.section_header').off('dragenter').off('dragleave');
+            warn_before_exit = true;
             evt.to.parentElement.scrollIntoView();
         },
     });
@@ -290,6 +297,7 @@ function make_sections_list_sortable(element) {
         onEnd: function (evt) {
             $(evt.item).children('.content').slideDown('fast');
             $('.tasks_list').children('.content').slideDown('fast');
+            warn_before_exit = true;
             evt.item.scrollIntoView();
         },
         onChange: function (evt) {
@@ -333,6 +341,7 @@ function get_tasks_list(element) {
 function submit() {
     const structure_json = JSON.stringify(get_sections_list($('#course_structure').children(".content")));
     const task_renamed_json = JSON.stringify(task_renamed);
+    warn_before_exit = false;
     $("<form>").attr("method", "post").appendTo($("#course_structure")).hide()
         .append($("<input>").attr("name", "course_structure").val(structure_json))
         .append($("<input>").attr("name", "task_renamed").val(task_renamed_json)).submit();
@@ -361,3 +370,15 @@ String.prototype.to_taskid = function () {
 String.prototype.to_section_id = function () {
     return this.slice(8);
 };
+
+
+/************************
+ *   Warn before exit   *
+ ************************/
+$(window).bind('beforeunload', function(){
+    if(warn_before_exit){
+        return 'All change will be lost! Are you sure you want to leave?';
+    } else {
+        return undefined;
+    }
+});
